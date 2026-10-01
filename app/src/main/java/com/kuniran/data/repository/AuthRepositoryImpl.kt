@@ -147,39 +147,34 @@ class AuthRepositoryImpl(
 
     override suspend fun updateProfile(
         fullName: String,
-        email: String?,
         phoneNumber: String?,
-        houseInfo: String?,
-        avatarPath: String?
-    ): Resource<UserProfile> = withContext(Dispatchers.IO) {
+        houseInfo: String?
+    ): Resource<Unit> = withContext(Dispatchers.IO) {
         try {
-            val uid = sessionManager.getUserId() ?: return@withContext Resource.Error(
-                com.kuniran.core.common.AppError.SessionExpired
-            )
+            val uid = sessionManager.getUserId()
+                ?: return@withContext Resource.Error(com.kuniran.core.common.AppError.SessionExpired)
             val current = profileDao.getProfile(uid)?.toDomain()
                 ?: return@withContext Resource.Error(com.kuniran.core.common.AppError.SessionExpired)
 
-            val updated = current.copy(
-                fullName = fullName,
-                email = email,
-                phoneNumber = phoneNumber,
-                houseInfo = houseInfo,
-                avatarPath = avatarPath,
-                updatedAt = System.currentTimeMillis().toString()
-            )
-
-            profileDao.insertProfile(ProfileEntity.fromDomain(updated))
-
+            // Server dulu: hanya field yang memang diubah user (email/avatar tidak dikirim).
             val body = mapOf(
                 "full_name" to fullName,
-                "email" to email,
                 "phone_number" to phoneNumber,
-                "house_info" to houseInfo,
-                "avatar_path" to avatarPath
+                "house_info" to houseInfo
             )
-            apiService.updateProfile("eq.$uid", body)
+            val response = apiService.updateProfile("eq.$uid", body)
+            if (!response.isSuccessful) throw retrofit2.HttpException(response)
 
-            Resource.Success(updated)
+            // Cache lokal baru diperbarui setelah server menerima perubahan.
+            val updated = current.copy(
+                fullName = fullName,
+                phoneNumber = phoneNumber,
+                houseInfo = houseInfo,
+                updatedAt = System.currentTimeMillis().toString()
+            )
+            profileDao.insertProfile(ProfileEntity.fromDomain(updated))
+
+            Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(ExceptionMapper.map(e))
         }
