@@ -1,0 +1,6 @@
+{
+  "name": "myKuniran",
+  "description": "Aplikasi Warga RT myKuniran - Informasi, agenda, warga, dan transparansi keuangan RT",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

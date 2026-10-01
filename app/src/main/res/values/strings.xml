@@ -1,0 +1,340 @@
+<resources>
+    <string name="app_name">myKuniran</string>
+    <string name="app_tagline">Guyub Rukun Warga Desa</string>
+    <string name="btn_back">Kembali</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Kabar RT</string>
+    <string name="nav_members">Warga</string>
+    <string name="nav_finance">Kas RT</string>
+    <string name="nav_settings">Pengaturan</string>
+
+    <!-- Auth & Onboarding -->
+    <string name="auth_welcome_title">Sugeng Rawuh</string>
+    <string name="auth_welcome_desc">Aplikasi resmi warga RT untuk komunikasi rukun warga, transparansi kas desa, dan agenda bersama.</string>
+    <string name="auth_btn_google">Masuk dengan Google</string>
+    <string name="auth_signing_in">Menghubungkan akun...</string>
+    <string name="auth_choose_status">Pilih Keanggotaan RT</string>
+    <string name="auth_join_rt_title">Gabung ke RT</string>
+    <string name="auth_join_rt_desc">Masukkan nama pengenal RT atau scan QR dari pengurus RT Anda.</string>
+    <string name="auth_create_rt_title">Daftarkan RT Baru</string>
+    <string name="auth_create_rt_desc">Khusus Ketua/Pengurus yang ingin mendata wilayah RT pertama kali.</string>
+    <string name="auth_pending_title">Menunggu Persetujuan</string>
+    <string name="auth_pending_desc">Permintaan gabung Anda sudah terkirim ke Pengurus RT. Silakan tunggu konfirmasi.</string>
+    <string name="auth_btn_cancel_request">Batalkan Permintaan</string>
+    <string name="auth_btn_check_status">Periksa Status</string>
+
+    <!-- Join RT Form -->
+    <string name="join_input_label">Nama Pengenal RT (@username)</string>
+    <string name="join_input_placeholder">contoh: rtklepu_02</string>
+    <string name="join_btn_preview">Cari RT</string>
+    <string name="join_btn_confirm">Ajukan Gabung</string>
+    <string name="join_found_label">Wilayah ditemukan:</string>
+    <string name="join_not_found">RT tidak ditemukan dengan nama pengenal tersebut</string>
+
+    <!-- Create RT Form -->
+    <string name="create_rt_header">Pendaftaran RT Baru</string>
+    <string name="field_rt_number">Nomor RT</string>
+    <string name="field_rt_number_hint">contoh: 02</string>
+    <string name="field_rw_number">Nomor RW</string>
+    <string name="field_rw_number_hint">contoh: 01</string>
+    <string name="field_desa">Desa / Kelurahan</string>
+    <string name="field_desa_hint">contoh: Klepu</string>
+    <string name="field_dukuh">Dukuh (Administratif)</string>
+    <string name="field_dukuh_hint">contoh: Krajan</string>
+    <string name="field_lingkungan">Lingkungan (Identitas Warga)</string>
+    <string name="field_lingkungan_hint">contoh: Sooko</string>
+    <string name="field_invite_username">Nama Pengenal Unik</string>
+    <string name="field_invite_username_hint">5-32 karakter, diawali huruf</string>
+    <string name="field_rt_name_optional">Label RT (Opsional)</string>
+    <string name="field_rt_name_hint">Kosongkan untuk otomatis</string>
+    <string name="btn_save_rt">Daftarkan RT Sekarang</string>
+
+    <!-- Home / Feed -->
+    <string name="home_tab_all">Semua</string>
+    <string name="home_tab_pengumuman">Pengumuman</string>
+    <string name="home_tab_agenda">Agenda</string>
+    <string name="home_tab_finance">Laporan Kas</string>
+    <string name="home_empty_feed">Belum ada kabar atau pengumuman di RT ini.</string>
+    <string name="home_btn_new_post">Tulis Kabar</string>
+    <string name="post_pinned_badge">Disematkan</string>
+    <string name="post_agenda_date">Waktu:</string>
+    <string name="post_agenda_location">Tempat:</string>
+    <string name="post_author_prefix">Oleh:</string>
+    <string name="post_menu_pin">Sematkan di Atas</string>
+    <string name="post_menu_unpin">Lepas Sematan</string>
+    <string name="post_menu_delete">Hapus Pos</string>
+    <string name="feed_menu_refresh">Segarkan Data</string>
+    <string name="post_delete_confirm_title">Hapus Pengumuman?</string>
+    <string name="post_delete_confirm_desc">Pos yang dihapus tidak dapat dipulihkan kembali.</string>
+
+    <!-- New Post Dialog -->
+    <string name="dialog_create_post_title">Buat Pengumuman Baru</string>
+    <string name="post_type_label">Jenis Pos</string>
+    <string name="post_type_pengumuman">Pengumuman</string>
+    <string name="post_type_agenda">Agenda Warga</string>
+    <string name="field_post_title">Judul Pengumuman</string>
+    <string name="field_post_title_hint">contoh: Kerja Bakti Lingkungan</string>
+    <string name="field_post_content">Isi Pengumuman</string>
+    <string name="field_post_content_hint">Tuliskan keterangan lengkap...</string>
+    <string name="field_agenda_location">Tempat Acara</string>
+    <string name="field_agenda_location_hint">contoh: Balai RT / Halaman Musholla</string>
+    <string name="field_agenda_time">Waktu Acara</string>
+    <string name="btn_publish_post">Terbitkan</string>
+
+    <!-- Members Screen -->
+    <string name="members_title">Daftar Warga RT</string>
+    <string name="resident_directory_title">Direktori Warga RT</string>
+    <string name="resident_search_hint">Cari nama warga atau blok/nomor rumah...</string>
+    <string name="resident_empty_search">Tidak ada warga yang sesuai dengan pencarian.</string>
+    <string name="resident_house_block">Blok/No: %s</string>
+    <string name="resident_head_of_family">Kepala Keluarga</string>
+    <string name="members_search_hint">Cari nama atau ciri rumah...</string>
+    <string name="members_empty">Belum ada data warga terdaftar.</string>
+    <string name="members_badge_admin">Pengurus RT</string>
+    <string name="members_badge_warga">Warga</string>
+    <string name="members_badge_ex_member">Alumni Warga</string>
+    <string name="member_phone_label">Nomor WhatsApp/HP:</string>
+    <string name="member_house_label">Ciri/Alamat Rumah:</string>
+    <string name="member_action_call">Hubungi via WA</string>
+    <string name="member_action_remove">Keluarkan Warga</string>
+    <string name="member_action_transfer">Jadikan Pengurus Utama</string>
+    <string name="members_pending_requests">Permintaan Gabung (%d)</string>
+    <string name="btn_approve">Setujui</string>
+    <string name="btn_reject">Tolak</string>
+
+    <!-- Finance / Kas RT -->
+    <string name="finance_title">Transparansi Kas RT</string>
+    <string name="finance_dashboard_title">Dashboard Kas RT</string>
+    <string name="finance_monthly_trends">Tren Kas Bulanan</string>
+    <string name="finance_categorized_transactions">Rincian per Pos Kategori</string>
+    <string name="finance_transactions_count">%d Transaksi</string>
+    <string name="finance_chart_income_legend">Masuk</string>
+    <string name="finance_chart_expense_legend">Keluar</string>
+    <string name="finance_record_title">Buku Kas &amp; Transaksi RT</string>
+    <string name="finance_filter_all">Semua</string>
+    <string name="finance_filter_in">Masuk</string>
+    <string name="finance_filter_out">Keluar</string>
+    <string name="finance_search_hint">Cari transaksi, pos kas, atau pihak...</string>
+    <string name="finance_net_balance">Saldo Bersih Kas</string>
+    <string name="finance_total_balance">Total Saldo Kas</string>
+    <string name="finance_category_selector">Pilih Pos Kas</string>
+    <string name="finance_tab_transactions">Transaksi</string>
+    <string name="finance_tab_recap">Rekap Bulanan</string>
+    <string name="finance_btn_add_transaction">Catat Transaksi</string>
+    <string name="finance_btn_publish_report">Terbitkan ke Kabar RT</string>
+    <string name="finance_btn_publish_recap">Terbitkan Rekap Bulan Lalu</string>
+    <string name="finance_type_in">Pemasukan (+)</string>
+    <string name="finance_type_out">Pengeluaran (-)</string>
+    <string name="field_trans_amount">Jumlah Uang (Rp)</string>
+    <string name="field_trans_amount_hint">contoh: 50000</string>
+    <string name="field_trans_title">Keterangan Transaksi</string>
+    <string name="field_trans_title_hint">contoh: Iuran Sampah / Beli Sapu Lidi</string>
+    <string name="field_trans_contributor">Nama Warga / Pihak Terkait</string>
+    <string name="field_trans_contributor_hint">contoh: Pak Sugeng</string>
+    <string name="field_trans_note">Catatan Tambahan</string>
+    <string name="field_trans_note_hint">Rincian opsional...</string>
+    <string name="finance_empty_trans">Belum ada transaksi di pos kas ini.</string>
+    <string name="finance_bendahara_label">Bendahara Pos:</string>
+    <string name="finance_no_bendahara">Belum ditunjuk</string>
+    <string name="finance_btn_manage_pos">Kelola Pos Kas</string>
+    <string name="finance_status_locked">Terkunci (Sudah Terbit)</string>
+    <string name="finance_status_editable">Draf Kas</string>
+    <string name="finance_header_pos_list">Daftar Pos Kas &amp; Arisan</string>
+    <string name="finance_pos_list_subtitle">Pilih pos keuangan untuk membuka rincian pembukuan lengkap</string>
+    <string name="finance_btn_add_pos">Tambah Pos Kas</string>
+    <string name="finance_btn_edit_pos">Ubah Nama Pos</string>
+    <string name="finance_dialog_add_pos_title">Tambah Pos Keuangan Baru</string>
+    <string name="finance_dialog_edit_pos_title">Ubah Data Pos Keuangan</string>
+    <string name="finance_field_pos_name">Nama Pos Keuangan</string>
+    <string name="finance_field_pos_name_hint">Contoh: Arisan, Arisan Pemuda, Kas Sosial</string>
+    <string name="finance_field_pos_desc">Keterangan Pos (Opsional)</string>
+    <string name="finance_field_pos_desc_hint">Contoh: Arisan rutin warga setiap pertemuan bulanan</string>
+    <string name="finance_ledger_title">Buku Kas: %1$s</string>
+    <string name="finance_ledger_saldo">Saldo Kas Pos</string>
+    <string name="finance_ledger_search_hint">Cari asal dana atau keperluan...</string>
+    <string name="finance_ledger_empty">Belum ada pembukuan transaksi di pos ini</string>
+    <string name="finance_item_origin">Asal Dana</string>
+    <string name="finance_item_purpose">Keperluan</string>
+    <string name="finance_item_date">Tanggal</string>
+    <string name="finance_item_nominal">Nominal</string>
+    <string name="finance_item_note">Catatan</string>
+    <string name="finance_only_bendahara_hint">Hanya Bendahara &amp; Pengurus RT</string>
+
+    <!-- Settings / Pengaturan -->
+    <string name="settings_title">Pengaturan &amp; Profil</string>
+    <string name="settings_profile_header">Profil Saya</string>
+    <string name="field_profile_name">Nama Lengkap</string>
+    <string name="field_profile_email">Alamat Email</string>
+    <string name="field_profile_phone">Nomor Telepon / WA</string>
+    <string name="field_profile_house">Alamat / Ciri Rumah</string>
+    <string name="btn_save_profile">Simpan Profil</string>
+    <string name="settings_rt_header">Kelola Wilayah RT</string>
+    <string name="settings_auto_approve">Setujui Otomatis Warga Baru</string>
+    <string name="settings_auto_approve_desc">Warga yang memasukkan username langsung disetujui tanpa antrean.</string>
+    <string name="settings_btn_edit_rt">Ubah Data Wilayah RT</string>
+    <string name="settings_btn_change_username">Ganti Nama Pengenal (@username)</string>
+    <string name="settings_btn_transfer_admin">Alihkan Jabatan Pengurus</string>
+    <string name="settings_btn_help_faq">Pusat Bantuan &amp; FAQ</string>
+    <string name="settings_btn_resident_directory">Direktori Warga (Data Supabase)</string>
+    <string name="settings_btn_finance_dashboard">Dashboard Analitik Kas RT</string>
+    <string name="settings_btn_leave_rt">Keluar dari RT Ini</string>
+    <string name="settings_btn_signout">Keluar Aplikasi</string>
+
+    <!-- Help & FAQ Screen -->
+    <string name="help_faq_title">Bantuan &amp; Tanya Jawab</string>
+    <string name="help_faq_subtitle">Panduan lengkap seputar bergabung ke RT, peran pengurus, dan pelaporan kas desa.</string>
+    <string name="help_faq_search_hint">Cari topik bantuan atau kata kunci...</string>
+    <string name="help_faq_empty_search">Tidak ditemukan topik bantuan dengan kata kunci tersebut.</string>
+    <string name="faq_section_join_title">Panduan Bergabung ke RT</string>
+    <string name="faq_section_join_desc">Langkah mudah menjadi anggota resmi RT di aplikasi.</string>
+    <string name="faq_join_q1">Bagaimana cara mencari dan bergabung ke RT saya?</string>
+    <string name="faq_join_a1">Minta nama pengenal RT (@username) kepada ketua atau sekretaris RT Anda. Buka menu Gabung RT, masukkan nama pengenal tersebut, periksa kecocokan data wilayah desa/RT/RW, lalu tekan Ajukan Gabung.</string>
+    <string name="faq_join_q2">Berapa lama proses persetujuan bergabung?</string>
+    <string name="faq_join_a2">Jika pengurus RT mengaktifkan fitur Persetujuan Otomatis, Anda akan langsung terdaftar sebagai warga. Jika tidak, pengurus akan meninjau dan menyetujui permohonan Anda terlebih dahulu.</string>
+    <string name="faq_join_q3">Bisakah saya membatalkan permohonan bergabung?</string>
+    <string name="faq_join_a3">Bisa. Selama permohonan masih dalam status menunggu konfirmasi pengurus, Anda dapat menekan tombol Batalkan Permintaan kapan saja.</string>
+    <string name="faq_section_admin_title">Peran &amp; Wewenang Pengurus RT</string>
+    <string name="faq_section_admin_desc">Tugas dan tanggung jawab Ketua RT dan staf pengurus.</string>
+    <string name="faq_admin_q1">Apa saja wewenang Ketua/Pengurus RT di myKuniran?</string>
+    <string name="faq_admin_a1">Pengurus RT bertindak sebagai admin wilayah: berhak mengubah data identitas RT, menerima atau menolak permohonan warga, menunjuk Bendahara per pos kas, menyematkan kabar prioritas, dan mengalihkan kepengurusan.</string>
+    <string name="faq_admin_q2">Bagaimana cara menunjuk Bendahara untuk Pos Kas?</string>
+    <string name="faq_admin_a2">Ketua RT dapat membuka menu Transparansi Kas RT, memilih Pos Kas (misal Kas Kematian atau Kas Sampah), lalu menentukan warga yang ditugaskan sebagai bendahara pencatat.</string>
+    <string name="faq_admin_q3">Bagaimana proses peralihan jabatan Ketua RT?</string>
+    <string name="faq_admin_a3">Ketua RT dapat memilih nama calon penerus dari daftar warga, lalu memilih menu Jadikan Pengurus Utama. Wewenang kepengurusan akan berpindah secara aman dan tercatat di server.</string>
+    <string name="faq_section_finance_title">Pengelolaan Kas &amp; Laporan Keuangan</string>
+    <string name="faq_section_finance_desc">Transparansi pemasukan, pengeluaran, dan rekapitulasi.</string>
+    <string name="faq_finance_q1">Siapa yang dapat mencatat pemasukan dan pengeluaran?</string>
+    <string name="faq_finance_a1">Pengurus RT dan warga yang ditunjuk sebagai Bendahara pos kas yang bersangkutan memiliki wewenang untuk mencatat transaksi masuk maupun keluar.</string>
+    <string name="faq_finance_q2">Mengapa transaksi yang diterbitkan menjadi terkunci?</string>
+    <string name="faq_finance_a2">Demi integritas dan transparansi warga, setiap transaksi kas yang telah diterbitkan ke Warta Kabar RT otomatis dikunci dari perubahan atau penghapusan sepihak.</string>
+    <string name="faq_finance_q3">Bagaimana cara menerbitkan Rekap Bulanan?</string>
+    <string name="faq_finance_a3">Setelah bulan berjalan berakhir, bendahara dapat memilih menu Terbitkan Rekap Bulan Lalu. Sistem akan otomatis menghitung total saldo awal, seluruh mutasi, dan saldo akhir bulan tersebut ke dalam format laporan siap baca.</string>
+    <string name="faq_section_privacy_title">Keamanan &amp; Privasi Data Warga</string>
+    <string name="faq_section_privacy_desc">Isolasi data antar-RT dan perlindungan informasi.</string>
+    <string name="faq_privacy_q1">Apakah warga dari RT lain dapat melihat keuangan atau kontak RT saya?</string>
+    <string name="faq_privacy_a1">Tidak. Sistem myKuniran menerapkan isolasi data ketat (Row Level Security). Warga dari RT lain sama sekali tidak dapat mengakses data kas, pengumuman, maupun nomor telepon warga RT Anda.</string>
+    <string name="faq_collapse_all">Tutup Semua</string>
+    <string name="faq_expand_all">Buka Semua</string>
+    <string name="help_fab_send_email">Hubungi Pengembang</string>
+    <string name="help_support_email">support@mykuniran.app</string>
+    <string name="help_email_subject">Bantuan &amp; Umpan Balik myKuniran</string>
+    <string name="help_no_email_app">Aplikasi email tidak ditemukan pada perangkat Anda.</string>
+    <string name="help_contact_support_title">Butuh Bantuan Tambahan?</string>
+    <string name="help_contact_support_desc">Kirimkan pertanyaan, laporan kendala, atau saran pengembangan langsung ke email pengembang.</string>
+    <string name="help_btn_send_email">Kirim Email ke Pengembang</string>
+
+    <!-- Firebase Cloud Messaging -->
+    <string name="fcm_channel_name">Kabar &amp; Agenda RT</string>
+    <string name="fcm_channel_desc">Pemberitahuan warta kabar, pertemuan warga, dan pengumuman kas RT.</string>
+    <string name="fcm_channel_urgent_name">Pengumuman Mendesak RT</string>
+    <string name="fcm_channel_urgent_desc">Pemberitahuan darurat dan pengumuman mendesak dari Pengurus RT.</string>
+    <string name="fcm_channel_forum_name">Forum &amp; Aspirasi Warga</string>
+    <string name="fcm_channel_forum_desc">Diskusi, tanya-jawab, dan usulan warga RT.</string>
+    <string name="fcm_new_agenda_title">Agenda RT Baru Diterbitkan</string>
+    <string name="fcm_new_agenda_body">Ada pengumuman atau pertemuan baru untuk warga RT.</string>
+
+    <!-- PDF Export -->
+    <string name="btn_export_pdf">Ekspor Laporan PDF</string>
+    <string name="pdf_export_success">Laporan kas berhasil dibuat &amp; siap dibagikan!</string>
+    <string name="pdf_export_error">Gagal mengekspor laporan PDF.</string>
+
+    <!-- QR Code Attendance Scanner -->
+    <string name="qr_scanner_title">Pindai Presensi Kegiatan</string>
+    <string name="qr_scanner_desc">Arahkan kamera ke kode QR kegiatan untuk mencatat kehadiran secara otomatis.</string>
+    <string name="qr_scanner_permission_needed">Izin kamera diperlukan untuk memindai kode QR presensi kegiatan.</string>
+    <string name="qr_scanner_btn_grant_permission">Izinkan Akses Kamera</string>
+    <string name="qr_scanner_success_title">Presensi Berhasil Dicatat!</string>
+    <string name="qr_scanner_history_title">Riwayat Kehadiran Kegiatan</string>
+    <string name="qr_scanner_history_empty">Belum ada riwayat kehadiran tercatat.</string>
+    <string name="qr_scanner_manual_entry">Input Manual</string>
+    <string name="qr_scanner_manual_dialog_title">Catat Kehadiran Kegiatan</string>
+    <string name="qr_scanner_manual_dialog_desc">Masukkan nama kegiatan RT jika kode QR tidak dapat dipindai.</string>
+    <string name="qr_scanner_event_name">Nama Kegiatan / Rapat RT</string>
+    <string name="qr_scanner_event_location">Lokasi Kegiatan (Opsional)</string>
+    <string name="qr_scanner_btn_record">Simpan Kehadiran</string>
+
+    <!-- Discussion Forum Thread -->
+    <string name="forum_title">Forum Diskusi Warga</string>
+    <string name="forum_tab_all">Semua</string>
+    <string name="forum_tab_questions">Pertanyaan</string>
+    <string name="forum_tab_suggestions">Saran &amp; Usulan</string>
+    <string name="forum_empty">Belum ada topik diskusi warga. Mulai diskusi pertama!</string>
+    <string name="forum_btn_new_thread">Tulis Pertanyaan / Saran</string>
+    <string name="forum_dialog_title">Buat Topik Baru</string>
+    <string name="forum_field_title">Judul Pertanyaan atau Saran</string>
+    <string name="forum_field_content">Uraian / Pesan Warga</string>
+    <string name="forum_field_category">Kategori</string>
+    <string name="forum_category_question">Pertanyaan</string>
+    <string name="forum_category_suggestion">Saran / Usulan</string>
+    <string name="forum_category_general">Diskusi Umum</string>
+    <string name="forum_btn_post">Kirim Topik</string>
+    <string name="forum_post_success">Topik berhasil dikirim ke forum warga.</string>
+    <string name="settings_btn_qr_scanner">Pindai Presensi Kegiatan (QR Code)</string>
+    <string name="settings_btn_forum">Forum Diskusi &amp; Aspirasi Warga</string>
+    <string name="settings_btn_calendar_rsvp">Kalender Kegiatan &amp; RSVP Warga</string>
+
+    <!-- Calendar & RSVP -->
+    <string name="calendar_title">Kalender &amp; Agenda RT</string>
+    <string name="calendar_empty_events">Belum ada agenda kegiatan warga yang dijadwalkan.</string>
+    <string name="rsvp_title">Konfirmasi Kehadiran (RSVP):</string>
+    <string name="rsvp_status_hadir">Hadir</string>
+    <string name="rsvp_status_tidak_hadir">Tidak Hadir</string>
+    <string name="rsvp_status_ragu">Ragu-ragu</string>
+    <string name="rsvp_success_msg">Konfirmasi kehadiran berhasil disimpan.</string>
+
+    <!-- Resident Directory Block Filter -->
+    <string name="directory_filter_all_blocks">Semua Blok</string>
+    <string name="directory_filter_block_prefix">Blok </string>
+    <string name="directory_no_residents">Tidak ada data warga ditemukan.</string>
+
+    <!-- Dialogs & General Actions -->
+    <string name="btn_cancel">Batal</string>
+    <string name="btn_save">Simpan</string>
+    <string name="btn_close">Tutup</string>
+    <string name="btn_confirm">Ya, Lanjutkan</string>
+    <string name="btn_retry">Coba Lagi</string>
+    <string name="loading">Memuat data...</string>
+    <string name="saving">Menyimpan perubahan...</string>
+    <string name="success_saved">Data berhasil disimpan</string>
+
+    <!-- Error Codes (§3.11) -->
+    <string name="error_session_expired">Sesi login telah berakhir. Silakan masuk kembali.</string>
+    <string name="error_account_inactive">Akun Anda sedang tidak aktif.</string>
+    <string name="error_already_in_rt">Anda sudah terdaftar sebagai warga di suatu RT.</string>
+    <string name="error_not_in_rt">Anda belum tergabung di lingkungan RT mana pun.</string>
+    <string name="error_has_pending_request">Anda masih memiliki permintaan bergabung yang sedang diproses.</string>
+    <string name="error_field_invalid">Isian belum lengkap atau format tidak sesuai.</string>
+    <string name="error_username_invalid">Nama pengenal harus 5-32 karakter, diawali huruf, dan tanpa spasi.</string>
+    <string name="error_username_taken">Nama pengenal RT ini sudah dipakai oleh RT lain.</string>
+    <string name="error_rate_limit_create_rt">Pendaftaran RT dibatasi maksimal 1 kali dalam 24 jam.</string>
+    <string name="error_rate_limit_post">Terlalu banyak membuat pengumuman dalam 1 jam terakhir.</string>
+    <string name="error_rt_not_found">RT dengan nama pengenal tersebut tidak ditemukan.</string>
+    <string name="error_rt_full">Kapasitas anggota RT sudah mencapai batas maksimal (300 warga).</string>
+    <string name="error_request_rejected_recently">Permintaan bergabung baru saja ditolak. Silakan coba lagi beberapa hari ke depan.</string>
+    <string name="error_request_not_found">Permintaan bergabung warga tidak ditemukan.</string>
+    <string name="error_request_already_decided">Permintaan warga ini sudah diputuskan sebelumnya.</string>
+    <string name="error_applicant_unavailable">Pemohon sudah bergabung ke RT lain atau akun tidak aktif.</string>
+    <string name="error_not_admin">Aksi ini hanya dapat dilakukan oleh Pengurus RT.</string>
+    <string name="error_admin_must_transfer">Alihkan kepengurusan kepada warga lain terlebih dahulu sebelum keluar dari RT.</string>
+    <string name="error_transfer_to_self">Silakan tunjuk warga lain sebagai pengurus pengganti.</string>
+    <string name="error_member_not_found">Data warga tidak ditemukan di RT ini.</string>
+    <string name="error_cannot_remove_self">Gunakan menu Keluar dari RT untuk melepaskan keanggotaan Anda sendiri.</string>
+    <string name="error_category_not_found">Pos kas tidak ditemukan.</string>
+    <string name="error_category_archived">Pos kas ini sudah diarsipkan dan tidak menerima transaksi baru.</string>
+    <string name="error_not_bendahara">Hanya Bendahara pos kas yang bersangkutan yang memiliki wewenang ini.</string>
+    <string name="error_not_allowed">Anda tidak memiliki hak akses untuk tindakan ini.</string>
+    <string name="error_post_not_found">Pengumuman tidak ditemukan atau sudah dihapus.</string>
+    <string name="error_report_cannot_delete">Laporan kas yang sudah diterbitkan tidak dapat dihapus demi integritas.</string>
+    <string name="error_transaction_not_found">Data transaksi kas tidak ditemukan.</string>
+    <string name="error_transaction_locked">Transaksi ini sudah diterbitkan ke warta warga dan tidak dapat diubah lagi.</string>
+    <string name="error_already_published">Transaksi ini sudah pernah diterbitkan sebelumnya.</string>
+    <string name="error_recap_already_published">Rekapitulasi kas bulan tersebut sudah pernah diterbitkan.</string>
+    <string name="error_month_not_ended">Rekapitulasi hanya dapat diterbitkan setelah bulan yang bersangkutan berakhir.</string>
+    <string name="error_month_already_published">Laporan bulan tersebut sudah diterbitkan. Silakan catat sebagai transaksi penyesuaian bertanggal hari ini.</string>
+    <string name="error_no_transactions">Tidak ditemukan transaksi kas pada bulan tersebut.</string>
+    <string name="error_date_in_future">Tanggal pencatatan transaksi tidak boleh di masa mendatang.</string>
+    <string name="error_correction_invalid">Transaksi koreksi harus berada pada pos kas yang sama.</string>
+    <string name="error_network">Koneksi internet bermasalah. Periksa jaringan Anda dan coba lagi.</string>
+    <string name="error_unknown">Terjadi kesalahan pada sistem. Silakan coba kembali.</string>
+</resources>
