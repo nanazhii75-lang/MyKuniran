@@ -1,5 +1,6 @@
 package com.kuniran.core.network
 
+import retrofit2.http.Headers
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -260,13 +261,19 @@ interface SupabaseApiService {
         @Body body: Map<String, Any?>
     ): Response<Unit>
 
+    @GET("rest/v1/warga_activities?order=scanned_at.desc&limit=100&select=*")
+    suspend fun getWargaActivities(
+        @Query("warga_id") wargaIdFilter: String?
+    ): List<WargaActivityDto>
+
     // Post RSVPs (Calendar + RSVP)
     @GET("rest/v1/post_rsvps?select=*")
     suspend fun getPostRsvps(
         @Query("rt_id") rtIdFilter: String
     ): List<PostRsvpDto>
 
-    @POST("rest/v1/post_rsvps")
+    @Headers("Prefer: resolution=merge-duplicates")
+    @POST("rest/v1/post_rsvps?on_conflict=post_id,user_id")
     suspend fun upsertPostRsvp(
         @Body body: Map<String, Any?>
     ): Response<Unit>

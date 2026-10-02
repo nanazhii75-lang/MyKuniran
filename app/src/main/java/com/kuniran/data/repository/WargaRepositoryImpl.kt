@@ -1,5 +1,6 @@
 package com.kuniran.data.repository
 
+import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.AppError
 import com.kuniran.core.common.Resource
 import com.kuniran.core.model.Warga
@@ -23,7 +24,6 @@ class WargaRepositoryImpl(
 ) : WargaRepository {
 
     private val apiService get() = supabaseClient.apiService
-    private val localAttendanceLogs = mutableListOf<WargaActivityLog>()
 
     override fun getWargaList(rtId: String): Flow<Resource<List<Warga>>> = flow {
         emit(Resource.Loading)
@@ -126,6 +126,7 @@ class WargaRepositoryImpl(
         }
     }
 
+    // Server dulu: presensi dianggap tercatat hanya setelah server menerima.
     override suspend fun logAttendance(
         rtId: String,
         wargaId: String,
@@ -133,45 +134,37 @@ class WargaRepositoryImpl(
         eventTitle: String,
         eventLocation: String?
     ): Resource<Unit> = withContext(Dispatchers.IO) {
-        runCatching {
-            val record = WargaActivityLog(
-                id = UUID.randomUUID().toString(),
-                rtId = rtId,
-                wargaId = wargaId,
-                residentName = residentName,
-                eventTitle = eventTitle,
-                eventLocation = eventLocation,
-                timestamp = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID")).format(Date())
+        try {
+            val body = mutableMapOf<String, Any?>(
+                "rt_id" to rtId,
+                "warga_id" to wargaId,
+                "resident_name" to residentName,
+                "event_title" to eventTitle
             )
-            synchronized(localAttendanceLogs) {
-                localAttendanceLogs.add(0, record)
+            if (!eventLocation.isNullOrBlank()) {
+                body["event_location"] = eventLocation
             }
-
-            // Sync to Supabase table
-            runCatching {
-                val body = mutableMapOf<String, Any?>(
-                    "rt_id" to rtId,
-                    "warga_id" to wargaId,
-                    "resident_name" to residentName,
-                    "event_title" to eventTitle
+            val response = apiService.insertWargaActivity(body)
+            if (!response.isSuccessful) {
+                return@withContext Resource.Error(
+                    ExceptionMapper.mapResponse(response.code(), runCatching { response.errorBody()?.string() }.getOrNull())
                 )
-                if (!eventLocation.isNullOrBlank()) {
-                    body["event_location"] = eventLocation
-                }
-                apiService.insertWargaActivity(body)
             }
-
             Resource.Success(Unit)
-        }.getOrElse { e ->
-            Resource.Error(AppError.Unknown(e.localizedMessage))
+        } catch (e: Exception) {
+            Resource.Error(ExceptionMapper.map(e))
         }
     }
 
+    // Riwayat dibaca dari server (satu sumber kebenaran), bukan dari daftar memori.
     override fun getAttendanceHistory(wargaId: String): Flow<Resource<List<WargaActivityLog>>> = flow {
         emit(Resource.Loading)
-        val list = synchronized(localAttendanceLogs) {
-            localAttendanceLogs.filter { it.wargaId == wargaId || wargaId.isEmpty() }.toList()
+        try {
+            val filter = if (wargaId.isEmpty()) null else "eq.$wargaId"
+            val list = apiService.getWargaActivities(filter).map { it.toDomain() }
+            emit(Resource.Success(list))
+        } catch (e: Exception) {
+            emit(Resource.Error(ExceptionMapper.map(e)))
         }
-        emit(Resource.Success(list))
     }.flowOn(Dispatchers.IO)
 }

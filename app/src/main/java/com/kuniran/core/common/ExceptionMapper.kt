@@ -41,6 +41,17 @@ object ExceptionMapper {
         return mapErrorCodeString(errorBody)
     }
 
+    /** Untuk Response<T> Retrofit non-2xx yang TIDAK melempar exception. */
+    fun mapResponse(code: Int, body: String?): AppError {
+        val text = body.orEmpty()
+        return when {
+            code == 401 -> AppError.SessionExpired
+            code == 403 || text.contains("42501") || text.contains("FORBIDDEN_DIRECT_CHANGE") -> AppError.NotAllowed
+            code in 500..599 -> AppError.Network
+            else -> mapErrorCodeString(text)
+        }
+    }
+
     fun mapErrorCodeString(raw: String): AppError {
         val upper = raw.uppercase()
         return when {
@@ -85,6 +96,7 @@ object ExceptionMapper {
             upper.contains("DUPLICATE_NAME") -> AppError.DuplicateName
             upper.contains("INVALID_NAME") -> AppError.InvalidName
             upper.contains("NO_RT") -> AppError.NotInRt
+            upper.contains("WARGA_ACTIVITIES_ONCE_PER_DAY") -> AppError.AlreadyAttended
             else -> AppError.Unknown(raw)
         }
     }

@@ -341,4 +341,5 @@
     <string name="error_rate_limit_lookup">Terlalu banyak percobaan. Tunggu beberapa menit, lalu coba lagi.</string>
     <string name="error_duplicate_name">Nama pos keuangan sudah dipakai di RT ini.</string>
     <string name="error_invalid_name">Nama pos keuangan harus 2 sampai 60 karakter.</string>
+    <string name="error_already_attended">Anda sudah tercatat hadir di kegiatan ini hari ini.</string>
 </resources>

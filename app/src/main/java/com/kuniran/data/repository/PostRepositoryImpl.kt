@@ -79,10 +79,7 @@ class PostRepositoryImpl(
             updatedAt = now
         )
 
-        // Save immediately to Room (Single Source of Truth)
-        postDao.insertPost(PostEntity.fromDomain(post))
-
-        // Push to Supabase
+        // Server dulu: data lokal baru disimpan setelah server menerima (tanpa postingan hantu)
         try {
             val body = mutableMapOf<String, Any?>(
                 "id" to newId,
@@ -94,7 +91,15 @@ class PostRepositoryImpl(
                 "event_date" to eventDate,
                 "event_location" to eventLocation
             )
-            apiService.createPost(body)
+            val response = apiService.createPost(body)
+            val errBody = if (response.isSuccessful) null
+                else runCatching { response.errorBody()?.string() }.getOrNull()
+            // 409 + 23505 pada id yang kita kirim sendiri = percobaan ulang yang sudah sampai (idempoten)
+            val duplicate = response.code() == 409 && errBody?.contains("23505") == true
+            if (!response.isSuccessful && !duplicate) {
+                return@withContext Resource.Error(ExceptionMapper.mapResponse(response.code(), errBody))
+            }
+            postDao.insertPost(PostEntity.fromDomain(post))
 
             // Trigger Edge Function to notify RT members via device_tokens
             runCatching {
@@ -120,13 +125,7 @@ class PostRepositoryImpl(
 
             Resource.Success(Unit)
         } catch (e: Exception) {
-            val err = ExceptionMapper.map(e)
-            // Idempotent error 23505 is not a failure
-            if (e.message?.contains("23505") == true) {
-                Resource.Success(Unit)
-            } else {
-                Resource.Error(err)
-            }
+            Resource.Error(ExceptionMapper.map(e))
         }
     }
 
@@ -173,9 +172,14 @@ class PostRepositoryImpl(
                 "rt_id" to rtId,
                 "status" to status.name
             )
-            apiService.upsertPostRsvp(body)
+            val response = apiService.upsertPostRsvp(body)
+            if (!response.isSuccessful) {
+                return@withContext Resource.Error(
+                    ExceptionMapper.mapResponse(response.code(), runCatching { response.errorBody()?.string() }.getOrNull())
+                )
+            }
 
-            // Update local memory state
+            // Perbarui status lokal hanya setelah server menerima
             val currentList = rsvpsState.value.filterNot { it.postId == postId && it.userId == userId }.toMutableList()
             currentList.add(
                 PostRsvp(

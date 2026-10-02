@@ -43,6 +43,7 @@ sealed class AppError(@StringRes val messageRes: Int) {
     object RateLimitLookup : AppError(R.string.error_rate_limit_lookup)
     object DuplicateName : AppError(R.string.error_duplicate_name)
     object InvalidName : AppError(R.string.error_invalid_name)
+    object AlreadyAttended : AppError(R.string.error_already_attended)
     object Network : AppError(R.string.error_network)
     data class LoginFailed(val detail: String? = null) : AppError(R.string.error_login_failed)
     data class Unknown(val technicalMessage: String? = null) : AppError(R.string.error_unknown)
