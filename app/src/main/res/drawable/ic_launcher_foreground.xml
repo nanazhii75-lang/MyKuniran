@@ -4,22 +4,55 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Center group inside safe zone (radius 33dp around 54,54) -->
-    <!-- House roof and structure -->
+
+    <!-- Latar Belakang Lingkungan / Sungai Minimalis -->
+    <!-- Elemen Air / Sungai -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,28 L30,48 L36,48 L36,76 L50,76 L50,62 L58,62 L58,76 L72,76 L72,48 L78,48 Z" />
-    <!-- Two people / community inside or next to house -->
-    <!-- Left citizen head -->
+        android:fillColor="#004D40"
+        android:pathData="M24,65 C35,60 45,72 58,66 C70,60 80,68 84,65 L84,78 L24,78 Z" />
+
+    <!-- Elemen Datar / Bukit Hijau di Belakang -->
     <path
-        android:fillColor="#81C784"
-        android:pathData="M44,42 A4,4 0 1,0 44,50 A4,4 0 1,0 44,42 Z" />
-    <!-- Right citizen head -->
+        android:fillColor="#2E7D32"
+        android:pathData="M20,68 C30,64 40,68 50,65 C60,62 70,66 88,68 L88,78 L20,78 Z" />
+
+    <!-- Pilar / Menara Jembatan Utama (Warna Kuning Emas) -->
     <path
-        android:fillColor="#A5D6A7"
-        android:pathData="M64,42 A4,4 0 1,0 64,50 A4,4 0 1,0 64,42 Z" />
-    <!-- Center heart / togetherness badge -->
+        android:fillColor="#FFB300"
+        android:pathData="M66,32 L72,32 L70,72 L64,72 Z" />
     <path
-        android:fillColor="#FFD54F"
-        android:pathData="M54,52 C52,48 48,48 48,52 C48,56 54,60 54,60 C54,60 60,56 60,52 C60,48 56,48 54,52 Z" />
+        android:fillColor="#FFA000"
+        android:pathData="M72,32 L78,32 L76,72 L70,72 Z" />
+    <!-- Balok Penghubung Menara Jembatan -->
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M66,36 L78,36 L78,40 L66,40 Z" />
+
+    <!-- Pilar Pendukung Kecil Sisi Kiri -->
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M32,54 L35,54 L35,72 L32,72 Z" />
+
+    <!-- Dek / Jalan Raya Jembatan Melengkung -->
+    <path
+        android:fillColor="#FFCA28"
+        android:pathData="M18,60 Q50,53 90,56 L90,61 Q50,58 18,65 Z" />
+
+    <!-- Kabel Suspensi Utama (Putih) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,52 Q42,57 69,34 Q79,48 90,53" />
+
+    <!-- Kabel Gantung Vertikal (Putih) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="0.8"
+        android:pathData="M26,53.5 L26,61 
+                          M34,55.5 L34,59.5 
+                          M42,56.8 L42,58.8 
+                          M50,55.5 L50,58 
+                          M58,50 L58,57 
+                          M76,43.5 L76,57.5 
+                          M82,49 L82,57.2" />
 </vector>
