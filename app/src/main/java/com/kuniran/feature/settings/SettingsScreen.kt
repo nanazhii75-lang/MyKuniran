@@ -1,5 +1,7 @@
 package com.kuniran.feature.settings
 
+import com.kuniran.core.common.asText
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -76,7 +78,7 @@ fun SettingsScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.clearError()
         }
     }

@@ -1,5 +1,7 @@
 package com.kuniran.feature.finance
 
+import com.kuniran.core.common.asText
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -85,7 +87,7 @@ fun FinanceDashboardScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.dismissError()
         }
     }

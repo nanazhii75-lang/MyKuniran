@@ -1,5 +1,7 @@
 package com.kuniran.feature.members
 
+import com.kuniran.core.common.asText
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -73,7 +75,7 @@ fun ResidentDirectoryScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.dismissError()
         }
     }

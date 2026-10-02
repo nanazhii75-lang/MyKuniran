@@ -1,5 +1,6 @@
 package com.kuniran.core.common
 
+import android.util.Log
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -38,7 +39,7 @@ object ExceptionMapper {
         }
 
         // Try extracting hint or message code from error body (PostgREST JSON)
-        return mapErrorCodeString(errorBody)
+        return withDiagnostic(mapErrorCodeString(errorBody), "HTTP $code ${errorBody.take(200)}")
     }
 
     /** Untuk Response<T> Retrofit non-2xx yang TIDAK melempar exception. */
@@ -48,8 +49,14 @@ object ExceptionMapper {
             code == 401 -> AppError.SessionExpired
             code == 403 || text.contains("42501") || text.contains("FORBIDDEN_DIRECT_CHANGE") -> AppError.NotAllowed
             code in 500..599 -> AppError.Network
-            else -> mapErrorCodeString(text)
+            else -> withDiagnostic(mapErrorCodeString(text), "HTTP $code ${text.take(200)}")
         }
+    }
+
+    private fun withDiagnostic(mapped: AppError, detail: String): AppError {
+        if (mapped !is AppError.Unknown) return mapped
+        Log.e("ExceptionMapper", "Unknown error: $detail")
+        return AppError.Unknown(detail)
     }
 
     fun mapErrorCodeString(raw: String): AppError {
@@ -102,8 +109,14 @@ object ExceptionMapper {
     }
 
     private fun mapGenericThrowable(throwable: Throwable): AppError {
-        val msg = throwable.message ?: return AppError.Unknown()
+        val msg = throwable.message ?: run {
+            Log.e("ExceptionMapper", "Unknown throwable tanpa pesan", throwable)
+            return AppError.Unknown(throwable::class.java.simpleName)
+        }
         val mapped = mapErrorCodeString(msg)
-        return if (mapped is AppError.Unknown) AppError.Unknown(msg) else mapped
+        if (mapped !is AppError.Unknown) return mapped
+        val detail = "${throwable::class.java.simpleName}: ${msg.take(200)}"
+        Log.e("ExceptionMapper", "Unknown throwable: $detail", throwable)
+        return AppError.Unknown(detail)
     }
 }

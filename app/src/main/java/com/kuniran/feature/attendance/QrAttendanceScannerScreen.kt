@@ -1,5 +1,7 @@
 package com.kuniran.feature.attendance
 
+import com.kuniran.core.common.asText
+
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -129,7 +131,7 @@ fun QrAttendanceScannerScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.dismissError()
         }
     }

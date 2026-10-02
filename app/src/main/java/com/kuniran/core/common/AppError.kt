@@ -1,5 +1,6 @@
 package com.kuniran.core.common
 
+import android.content.Context
 import androidx.annotation.StringRes
 import com.kuniran.R
 
@@ -47,4 +48,12 @@ sealed class AppError(@StringRes val messageRes: Int) {
     object Network : AppError(R.string.error_network)
     data class LoginFailed(val detail: String? = null) : AppError(R.string.error_login_failed)
     data class Unknown(val technicalMessage: String? = null) : AppError(R.string.error_unknown)
+}
+
+/** Teks untuk UI. Pada build debug, kesalahan tak dikenal menampilkan detail teknis agar mudah dilacak. */
+fun AppError.asText(context: Context): String {
+    val base = context.getString(messageRes)
+    return if (this is AppError.Unknown && com.kuniran.BuildConfig.DEBUG && !technicalMessage.isNullOrBlank()) {
+        "$base [${technicalMessage.take(160)}]"
+    } else base
 }

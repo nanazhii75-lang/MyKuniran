@@ -1,5 +1,7 @@
 package com.kuniran.feature.auth
 
+import com.kuniran.core.common.asText
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -64,7 +66,7 @@ fun CreateRtScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.clearError()
         }
     }

@@ -22,3 +22,4 @@ debug.keystore
 
 # Berkas rahasia Firebase (CI membuatnya dari GitHub Secrets)
 app/google-services.json
+upload.jks.b64

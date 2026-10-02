@@ -1,5 +1,7 @@
 package com.kuniran.feature.finance
 
+import com.kuniran.core.common.asText
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -92,7 +94,7 @@ fun FinanceScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.clearError()
         }
     }

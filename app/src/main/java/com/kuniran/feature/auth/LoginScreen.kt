@@ -1,5 +1,7 @@
 package com.kuniran.feature.auth
 
+import com.kuniran.core.common.asText
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,7 +72,7 @@ fun LoginScreen(
             val text = if (err is AppError.LoginFailed) {
                 context.getString(err.messageRes, err.detail ?: "-")
             } else {
-                context.getString(err.messageRes)
+                err.asText(context)
             }
             snackbarHostState.showSnackbar(text)
             viewModel.clearError()

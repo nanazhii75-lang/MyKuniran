@@ -1,5 +1,7 @@
 package com.kuniran.feature.forum
 
+import com.kuniran.core.common.asText
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -87,7 +89,7 @@ fun DiscussionForumScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            snackbarHostState.showSnackbar(err.asText(context))
             viewModel.dismissError()
         }
     }
