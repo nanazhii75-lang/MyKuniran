@@ -120,8 +120,8 @@ GOOGLE_ANDROID_CLIENT_ID=<your-android-client-id>.apps.googleusercontent.com
 
 Build hanya di GitHub Actions. Tanpa Gradle wrapper di repo: CI memasang Gradle 9.3.1 lewat `gradle/actions/setup-gradle` (sama dengan `gradle-wrapper.properties`; AGP 9.1.1 butuh minimal 9.3.1).
 
-- Push / PR: job `compile` (kompilasi Kotlin, tanpa secrets).
-- Manual (Actions > Build > Run workflow): `compile` + `release` (APK bertanda tangan, artefak `kuniran-release-apk`).
+- Push ke `main` (selain perubahan `.md` / `supabase/`) atau manual (Actions > Build > Run workflow): job `apk` membangun APK release bertanda tangan (`assembleRelease`), artefak `kuniran-release-apk` (14 hari).
+- Pull request: job `compile` saja (kompilasi Kotlin, tanpa secrets).
 
 Secrets repo yang dibutuhkan job `release`:
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID`, `GOOGLE_SERVICES_JSON`, `KEYSTORE_BASE64`, `STORE_PASSWORD`, `KEY_PASSWORD` (alias key: `upload`).
@@ -134,6 +134,7 @@ Secrets repo yang dibutuhkan job `release`:
 Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi fitur di atas adalah target rancangan; setiap fitur baru dianggap berfungsi setelah lolos uji di perangkat fisik.
 
 ### Terverifikasi (2 Okt 2026)
+- **Kompilasi CI (554ed77):** BUILD SUCCESSFUL setelah patch presensi, RSVP, dan postingan server-dulu.
 - **Kompilasi CI:** kode `com.kuniran` terkompilasi di GitHub Actions (BUILD SUCCESSFUL), termasuk perbaikan login.
 - **Keystore & Firebase:** SHA-1 keystore sama dengan yang terdaftar di `google-services.json` (package `com.kuniran`).
 - **Login:** login cadangan email/sandi tebakan, akun bersama bawaan, dan token palsu telah dihapus. Login hanya memakai Google ID token asli ke Supabase; error server ditampilkan apa adanya. *Belum diuji di HP.*

@@ -1,10 +1,13 @@
 name: Build
 
-# push / pull request : cek kompilasi saja (tanpa secrets)
-# jalankan manual (Actions > Build > Run workflow) : kompilasi + APK release bertanda tangan
+# push ke main / jalankan manual : build APK release bertanda tangan + unggah artefak (butuh 9 secret)
+# pull request                   : hanya cek kompilasi (secret tidak tersedia untuk PR dari fork)
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'supabase/**'
   pull_request:
   workflow_dispatch:
 
@@ -13,6 +16,7 @@ permissions:
 
 jobs:
   compile:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -25,18 +29,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.3.1'
-      - name: Info SDK terpasang (diagnostik)
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --list_installed || true
       - name: Terima lisensi SDK
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - name: Kompilasi Kotlin (debug)
         run: gradle compileDebugKotlin --no-daemon --stacktrace
 
-  release:
-    if: github.event_name == 'workflow_dispatch'
-    needs: compile
+  apk:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -96,6 +95,8 @@ jobs:
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: gradle assembleRelease --no-daemon --stacktrace
+      - name: Daftar hasil build
+        run: ls -la app/build/outputs/apk/release/
       - uses: actions/upload-artifact@v4
         with:
           name: kuniran-release-apk
