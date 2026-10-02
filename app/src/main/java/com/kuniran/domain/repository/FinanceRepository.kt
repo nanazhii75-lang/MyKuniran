@@ -13,7 +13,7 @@ interface FinanceRepository {
     suspend fun syncCategories(rtId: String): Resource<Unit>
     suspend fun syncTransactions(rtId: String): Resource<Unit>
     suspend fun createCategory(rtId: String, name: String, description: String?): Resource<Unit>
-    suspend fun updateCategory(categoryId: String, name: String, description: String?, isArchived: Boolean): Resource<Unit>
+    suspend fun updateCategory(categoryId: String, name: String, description: String?, isArchived: Boolean?): Resource<Unit>
     suspend fun createTransaction(
         rtId: String,
         categoryId: String,

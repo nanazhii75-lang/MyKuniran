@@ -1,5 +1,6 @@
 package com.kuniran.data.repository
 
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.Resource
 import com.kuniran.core.database.ProfileDao
@@ -110,17 +111,17 @@ class RtRepositoryImpl(
     override suspend fun requestJoinRt(inviteUsername: String): Resource<String> = withContext(Dispatchers.IO) {
         try {
             val result = apiService.requestJoinRt(RequestJoinRtRequest(inviteUsername))
+            if (result == "NOT_FOUND") {
+                return@withContext Resource.Error(AppError.RtNotFound)
+            }
             if (result == "APPROVED") {
-                // If auto-approved, refresh profile to get rt_id
+                // Auto-approve: profil HARUS dibaca ulang dari server; kegagalan tidak ditelan
                 val uid = sessionManager.getUserId()
-                if (uid != null) {
-                    val remote = runCatching { apiService.getProfile("eq.$uid") }.getOrNull()
-                    if (!remote.isNullOrEmpty()) {
-                        val p = remote.first().toDomain()
-                        sessionManager.updateRtId(p.rtId, p.role.name)
-                        profileDao.insertProfile(com.kuniran.core.database.ProfileEntity.fromDomain(p))
-                    }
-                }
+                    ?: return@withContext Resource.Error(AppError.SessionExpired)
+                val p = apiService.getProfile("eq.$uid").firstOrNull()?.toDomain()
+                    ?: return@withContext Resource.Error(AppError.Network)
+                sessionManager.updateRtId(p.rtId, p.role.name)
+                profileDao.insertProfile(com.kuniran.core.database.ProfileEntity.fromDomain(p))
             }
             Resource.Success(result)
         } catch (e: Exception) {

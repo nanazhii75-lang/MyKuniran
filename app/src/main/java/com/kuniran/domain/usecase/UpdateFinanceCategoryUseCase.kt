@@ -10,7 +10,7 @@ class UpdateFinanceCategoryUseCase(
         categoryId: String,
         name: String,
         description: String?,
-        isArchived: Boolean = false
+        isArchived: Boolean? = null
     ): Resource<Unit> {
         return financeRepository.updateCategory(categoryId, name, description, isArchived)
     }

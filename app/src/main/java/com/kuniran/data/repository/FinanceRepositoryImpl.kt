@@ -1,5 +1,6 @@
 package com.kuniran.data.repository
 
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.DateTimeUtils
 import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.Resource
@@ -63,33 +64,26 @@ class FinanceRepositoryImpl(
         }
     }
 
-    override suspend fun createCategory(rtId: String, name: String, description: String?): Resource<Unit> = withContext(Dispatchers.IO) {
-        val newId = UUID.randomUUID().toString()
-        val now = DateTimeUtils.currentIsoTimestamp()
-        val category = FinanceCategory(
-            id = newId,
-            rtId = rtId,
-            name = name,
-            description = description,
-            bendaharaId = null,
-            isArchived = false,
-            createdAt = now,
-            updatedAt = now
-        )
-        categoryDao.insertCategory(FinanceCategoryEntity.fromDomain(category))
+    private fun mapFailedResponse(code: Int, body: String?): AppError {
+        val text = body.orEmpty()
+        return when {
+            code == 401 -> AppError.SessionExpired
+            code == 403 || text.contains("42501") -> AppError.NotAllowed
+            code in 500..599 -> AppError.Network
+            else -> ExceptionMapper.mapErrorCodeString(text)
+        }
+    }
 
+    // Server dulu: data lokal hanya berubah setelah server menerima. Tidak ada pos hantu.
+    override suspend fun createCategory(rtId: String, name: String, description: String?): Resource<Unit> = withContext(Dispatchers.IO) {
         try {
             val response = apiService.createFinanceCategory(
                 CreateFinanceCategoryRequest(name = name, description = description)
             )
             if (!response.isSuccessful) {
-                val body = mapOf(
-                    "id" to newId,
-                    "rt_id" to rtId,
-                    "name" to name,
-                    "description" to description
+                return@withContext Resource.Error(
+                    mapFailedResponse(response.code(), runCatching { response.errorBody()?.string() }.getOrNull())
                 )
-                apiService.createCategory(body)
             }
             syncCategories(rtId)
             Resource.Success(Unit)
@@ -102,23 +96,24 @@ class FinanceRepositoryImpl(
         categoryId: String,
         name: String,
         description: String?,
-        isArchived: Boolean
+        isArchived: Boolean?
     ): Resource<Unit> = withContext(Dispatchers.IO) {
         try {
-            categoryDao.updateCategoryInfo(categoryId, name, description)
-            categoryDao.updateArchived(categoryId, isArchived)
-
             val response = apiService.updateFinanceCategory(
-                UpdateFinanceCategoryRequest(categoryId = categoryId, name = name, description = description)
+                UpdateFinanceCategoryRequest(
+                    categoryId = categoryId,
+                    name = name,
+                    description = description,
+                    isArchived = isArchived
+                )
             )
             if (!response.isSuccessful) {
-                val body = mapOf(
-                    "name" to name,
-                    "description" to description,
-                    "is_archived" to isArchived
+                return@withContext Resource.Error(
+                    mapFailedResponse(response.code(), runCatching { response.errorBody()?.string() }.getOrNull())
                 )
-                apiService.updateCategory("eq.$categoryId", body)
             }
+            categoryDao.updateCategoryInfo(categoryId, name, description)
+            if (isArchived != null) categoryDao.updateArchived(categoryId, isArchived)
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(ExceptionMapper.map(e))

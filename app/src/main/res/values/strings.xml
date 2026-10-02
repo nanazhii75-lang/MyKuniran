@@ -338,4 +338,7 @@
     <string name="error_network">Koneksi internet bermasalah. Periksa jaringan Anda dan coba lagi.</string>
     <string name="error_unknown">Terjadi kesalahan pada sistem. Silakan coba kembali.</string>
     <string name="error_login_failed">Gagal masuk: %1$s</string>
+    <string name="error_rate_limit_lookup">Terlalu banyak percobaan. Tunggu beberapa menit, lalu coba lagi.</string>
+    <string name="error_duplicate_name">Nama pos keuangan sudah dipakai di RT ini.</string>
+    <string name="error_invalid_name">Nama pos keuangan harus 2 sampai 60 karakter.</string>
 </resources>

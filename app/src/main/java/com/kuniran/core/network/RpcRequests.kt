@@ -130,5 +130,6 @@ data class CreateFinanceCategoryRequest(
 data class UpdateFinanceCategoryRequest(
     @Json(name = "p_category_id") val categoryId: String,
     @Json(name = "p_name") val name: String,
-    @Json(name = "p_description") val description: String? = null
+    @Json(name = "p_description") val description: String? = null,
+    @Json(name = "p_is_archived") val isArchived: Boolean? = null
 )

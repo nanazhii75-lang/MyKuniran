@@ -80,6 +80,11 @@ object ExceptionMapper {
             upper.contains("NO_TRANSACTIONS") -> AppError.NoTransactions
             upper.contains("DATE_IN_FUTURE") -> AppError.DateInFuture
             upper.contains("CORRECTION_INVALID") -> AppError.CorrectionInvalid
+            upper.contains("RATE_LIMIT_LOOKUP") -> AppError.RateLimitLookup
+            upper.contains("NOT_AUTHORIZED") -> AppError.NotAllowed
+            upper.contains("DUPLICATE_NAME") -> AppError.DuplicateName
+            upper.contains("INVALID_NAME") -> AppError.InvalidName
+            upper.contains("NO_RT") -> AppError.NotInRt
             else -> AppError.Unknown(raw)
         }
     }
