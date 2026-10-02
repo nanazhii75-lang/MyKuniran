@@ -3,6 +3,7 @@ package com.kuniran.feature.home
 import com.kuniran.core.common.asText
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -130,64 +136,60 @@ fun HomeScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Quick Access Features (Calendar & RSVP, Forum Warga, QR Scanner)
+            // Quick Access Features (Agenda, Forum, Presensi)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(
+                QuickAccessButton(
+                    icon = Icons.Default.CalendarToday,
+                    label = stringResource(R.string.home_tab_agenda),
                     onClick = onNavigateCalendarRsvp,
                     modifier = Modifier.weight(1f).testTag("btn_home_quick_calendar")
-                ) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                    Text(stringResource(R.string.home_tab_agenda), style = MaterialTheme.typography.bodySmall)
-                }
-
-                OutlinedButton(
+                )
+                QuickAccessButton(
+                    icon = Icons.Default.Forum,
+                    label = "Forum",
                     onClick = onNavigateForum,
                     modifier = Modifier.weight(1f).testTag("btn_home_quick_forum")
-                ) {
-                    Icon(Icons.Default.Forum, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                    Text("Forum", style = MaterialTheme.typography.bodySmall)
-                }
-
-                OutlinedButton(
+                )
+                QuickAccessButton(
+                    icon = Icons.Default.QrCodeScanner,
+                    label = "Presensi",
                     onClick = onNavigateQrScanner,
                     modifier = Modifier.weight(1f).testTag("btn_home_quick_qr")
-                ) {
-                    Icon(Icons.Default.QrCodeScanner, contentDescription = null, modifier = Modifier.padding(end = 4.dp))
-                    Text("Presensi", style = MaterialTheme.typography.bodySmall)
-                }
+                )
             }
 
             // Filter row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterChip(
                     selected = uiState.selectedFilter == "ALL",
                     onClick = { viewModel.setFilter("ALL") },
-                    label = { Text(stringResource(R.string.home_tab_all)) }
+                    label = { Text(stringResource(R.string.home_tab_all), maxLines = 1, softWrap = false) }
                 )
                 FilterChip(
                     selected = uiState.selectedFilter == "PENGUMUMAN",
                     onClick = { viewModel.setFilter("PENGUMUMAN") },
-                    label = { Text(stringResource(R.string.home_tab_pengumuman)) }
+                    label = { Text(stringResource(R.string.home_tab_pengumuman), maxLines = 1, softWrap = false) }
                 )
                 FilterChip(
                     selected = uiState.selectedFilter == "AGENDA",
                     onClick = { viewModel.setFilter("AGENDA") },
-                    label = { Text(stringResource(R.string.home_tab_agenda)) }
+                    label = { Text(stringResource(R.string.home_tab_agenda), maxLines = 1, softWrap = false) }
                 )
                 FilterChip(
                     selected = uiState.selectedFilter == "FINANCE_REPORT",
                     onClick = { viewModel.setFilter("FINANCE_REPORT") },
-                    label = { Text(stringResource(R.string.home_tab_finance)) }
+                    label = { Text(stringResource(R.string.home_tab_finance), maxLines = 1, softWrap = false) }
                 )
             }
 
@@ -202,7 +204,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .testTag("feed_list"),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(filteredPosts, key = { it.id }) { post ->
@@ -235,6 +237,34 @@ fun HomeScreen(
                         }
                     )
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun QuickAccessButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
             )
         }
     }

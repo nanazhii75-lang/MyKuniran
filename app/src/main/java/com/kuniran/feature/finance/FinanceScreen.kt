@@ -343,7 +343,7 @@ private fun FinancePosOverview(
         modifier = Modifier
             .fillMaxSize()
             .testTag("pos_overview_list"),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Overall Balance Card
@@ -469,17 +469,6 @@ private fun FinancePosOverview(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                if (uiState.canManageAnyPos) {
-                    OutlinedButton(
-                        onClick = onAddPos,
-                        modifier = Modifier.testTag("btn_add_pos_inline")
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.finance_btn_add_pos), style = MaterialTheme.typography.bodySmall)
-                    }
-                }
             }
         }
 
@@ -568,7 +557,7 @@ private fun PosCategoryCard(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = category.name,
                             style = MaterialTheme.typography.titleMedium,
@@ -624,7 +613,7 @@ private fun PosCategoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.finance_ledger_saldo),
                         style = MaterialTheme.typography.bodySmall,
