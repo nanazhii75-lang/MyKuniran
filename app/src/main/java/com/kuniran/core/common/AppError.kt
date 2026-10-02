@@ -50,10 +50,10 @@ sealed class AppError(@StringRes val messageRes: Int) {
     data class Unknown(val technicalMessage: String? = null) : AppError(R.string.error_unknown)
 }
 
-/** Teks untuk UI. Pada build debug, kesalahan tak dikenal menampilkan detail teknis agar mudah dilacak. */
+/** SEMENTARA: kesalahan tak dikenal menampilkan detail teknis untuk pelacakan bug. Kembalikan ke build debug saja setelah bug selesai. */
 fun AppError.asText(context: Context): String {
     val base = context.getString(messageRes)
-    return if (this is AppError.Unknown && com.kuniran.BuildConfig.DEBUG && !technicalMessage.isNullOrBlank()) {
+    return if (this is AppError.Unknown && !technicalMessage.isNullOrBlank()) {
         "$base [${technicalMessage.take(160)}]"
     } else base
 }
