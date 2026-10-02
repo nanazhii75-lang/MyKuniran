@@ -9,6 +9,8 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Query
 
+// Retrofit menolak tipe wildcard pada parameter; Map<String, Any?> Kotlin menjadi Map<String, ?> di JVM
+@JvmSuppressWildcards
 interface SupabaseApiService {
 
     // Health / Root Connectivity Ping
