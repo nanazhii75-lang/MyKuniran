@@ -101,26 +101,10 @@ class PostRepositoryImpl(
             }
             postDao.insertPost(PostEntity.fromDomain(post))
 
-            // Trigger Edge Function to notify RT members via device_tokens
+            // Minta server menotifikasi anggota RT. Hanya post_id yang dikirim; server memverifikasi
+            // pemanggil, RT, dan isi pos dari database. Kegagalan push tidak boleh menggagalkan pos.
             runCatching {
-                val notifCategory = when (type) {
-                    PostType.PENGUMUMAN -> "urgent"
-                    PostType.AGENDA -> "agenda"
-                    PostType.DISKUSI -> "forum"
-                    PostType.FINANCE_REPORT -> "urgent"
-                }
-                apiService.sendRtNotification(
-                    mapOf(
-                        "rt_id" to rtId,
-                        "category" to notifCategory,
-                        "title" to title,
-                        "body" to content.take(150),
-                        "location" to eventLocation,
-                        "time" to eventDate,
-                        "post_id" to newId,
-                        "exclude_profile_id" to authorId
-                    )
-                )
+                apiService.sendRtNotification(mapOf("post_id" to newId))
             }
 
             Resource.Success(Unit)

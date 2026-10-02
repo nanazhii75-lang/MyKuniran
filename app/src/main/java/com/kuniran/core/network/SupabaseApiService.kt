@@ -288,7 +288,4 @@ interface SupabaseApiService {
     suspend fun sendRtNotification(
         @Body payload: Map<String, Any?>
     ): Response<Unit>
-
-    @POST("functions/v1/agenda-reminder-h1")
-    suspend fun triggerAgendaReminder(): Response<Unit>
 }
