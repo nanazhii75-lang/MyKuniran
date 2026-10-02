@@ -41,5 +41,6 @@ sealed class AppError(@StringRes val messageRes: Int) {
     object DateInFuture : AppError(R.string.error_date_in_future)
     object CorrectionInvalid : AppError(R.string.error_correction_invalid)
     object Network : AppError(R.string.error_network)
+    data class LoginFailed(val detail: String? = null) : AppError(R.string.error_login_failed)
     data class Unknown(val technicalMessage: String? = null) : AppError(R.string.error_unknown)
 }

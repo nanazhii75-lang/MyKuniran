@@ -19,3 +19,6 @@ debug.keystore
 *.jks
 *.keystore
 *.p12
+
+# Berkas rahasia Firebase (CI membuatnya dari GitHub Secrets)
+app/google-services.json

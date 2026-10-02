@@ -337,4 +337,5 @@
     <string name="error_correction_invalid">Transaksi koreksi harus berada pada pos kas yang sama.</string>
     <string name="error_network">Koneksi internet bermasalah. Periksa jaringan Anda dan coba lagi.</string>
     <string name="error_unknown">Terjadi kesalahan pada sistem. Silakan coba kembali.</string>
+    <string name="error_login_failed">Gagal masuk: %1$s</string>
 </resources>

@@ -2,6 +2,7 @@ package com.kuniran.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.Resource
 import com.kuniran.domain.usecase.CancelJoinRequestUseCase
 import com.kuniran.domain.usecase.CheckUsernameAvailableUseCase
@@ -39,10 +40,15 @@ class AuthViewModel(
         }
     }
 
-    fun signInWithGoogle(name: String, email: String, idToken: String = "") {
+    fun onGoogleSignInFailed(throwable: Throwable) {
+        val detail = throwable.message?.takeIf { it.isNotBlank() } ?: throwable.javaClass.simpleName
+        _uiState.update { it.copy(isLoading = false, error = AppError.LoginFailed(detail)) }
+    }
+
+    fun signInWithGoogle(idToken: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            when (val res = signInWithGoogleUseCase(idToken, email, name)) {
+            when (val res = signInWithGoogleUseCase(idToken)) {
                 is Resource.Success -> {
                     _uiState.update { it.copy(isLoading = false, currentUser = res.data) }
                 }

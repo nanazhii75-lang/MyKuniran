@@ -7,7 +7,7 @@ import com.kuniran.domain.repository.AuthRepository
 class SignInWithGoogleUseCase(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(idToken: String, email: String, name: String): Resource<UserProfile> {
-        return authRepository.signInWithGoogle(idToken, email, name)
+    suspend operator fun invoke(idToken: String): Resource<UserProfile> {
+        return authRepository.signInWithGoogle(idToken)
     }
 }

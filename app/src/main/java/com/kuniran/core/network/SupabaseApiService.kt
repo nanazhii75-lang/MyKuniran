@@ -20,16 +20,6 @@ interface SupabaseApiService {
         @Body body: Map<String, String>
     ): Response<SupabaseAuthResponseDto>
 
-    @POST("auth/v1/signup")
-    suspend fun signUp(
-        @Body body: Map<String, Any?>
-    ): Response<SupabaseAuthResponseDto>
-
-    @POST("auth/v1/token?grant_type=password")
-    suspend fun signInWithPassword(
-        @Body body: Map<String, String>
-    ): Response<SupabaseAuthResponseDto>
-
     @POST("auth/v1/token?grant_type=refresh_token")
     suspend fun refreshToken(
         @Body body: Map<String, String>

@@ -1,5 +1,6 @@
 package com.kuniran.data.repository
 
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.Resource
 import com.kuniran.core.database.ProfileDao
@@ -8,14 +9,12 @@ import com.kuniran.core.model.UserProfile
 import com.kuniran.core.model.UserRole
 import com.kuniran.core.network.SessionManager
 import com.kuniran.core.network.SupabaseApiService
-import com.kuniran.core.network.SupabaseConfig
 import com.kuniran.core.network.toDomain
 import com.kuniran.domain.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
 class AuthRepositoryImpl(
     private val apiService: SupabaseApiService,
@@ -33,111 +32,64 @@ class AuthRepositoryImpl(
         profileDao.getProfile(uid)?.toDomain()
     }
 
-    override suspend fun signInWithGoogle(
-        idToken: String,
-        email: String,
-        name: String
-    ): Resource<UserProfile> = withContext(Dispatchers.IO) {
+    override suspend fun signInWithGoogle(idToken: String): Resource<UserProfile> = withContext(Dispatchers.IO) {
         try {
-            var userId = sessionManager.getUserId() ?: UUID.randomUUID().toString()
-            var accessToken: String? = null
-            var refreshToken: String? = null
+            if (idToken.isBlank()) {
+                return@withContext Resource.Error(AppError.LoginFailed("Token Google kosong"))
+            }
 
-            // 1. Authenticate with Supabase Auth via Google ID token if present
-            if (idToken.isNotBlank()) {
-                val authBody = mapOf(
-                    "provider" to "google",
-                    "id_token" to idToken,
-                    "client_id" to SupabaseConfig.googleAndroidClientId
+            // Sesuai dokumentasi Supabase: provider=google + id_token. client_id tidak dikirim
+            // (hanya relevan untuk jalur tanpa provider yang dinyatakan deprecated oleh Supabase).
+            val authResponse = apiService.signInWithIdToken(
+                mapOf("provider" to "google", "id_token" to idToken)
+            )
+            if (!authResponse.isSuccessful) {
+                val body = runCatching { authResponse.errorBody()?.string() }.getOrNull()
+                return@withContext Resource.Error(
+                    AppError.LoginFailed(describeAuthFailure(authResponse.code(), body))
                 )
-                val authResult = runCatching { apiService.signInWithIdToken(authBody) }.getOrNull()
-                if (authResult != null && authResult.isSuccessful) {
-                    val authData = authResult.body()
-                    if (authData != null) {
-                        accessToken = authData.accessToken
-                        refreshToken = authData.refreshToken
-                        authData.user?.id?.let { userId = it }
-                    }
-                }
             }
+            val authData = authResponse.body()
+                ?: return@withContext Resource.Error(AppError.LoginFailed("Respons server kosong"))
+            val userId = authData.user?.id
+                ?: return@withContext Resource.Error(AppError.LoginFailed("Respons server tanpa data pengguna"))
 
-            // 2. Fallback to Supabase Auth Email/Password to ensure a valid JWT & auth.uid() in Postgres
-            if (accessToken.isNullOrBlank()) {
-                val validEmail = if (email.contains("@")) email.trim().lowercase() else "warga.${userId.take(8)}@mykuniran.app"
-                val securePass = "Kuniran_Auth_${validEmail.hashCode().toULong()}_Secure#2026"
-
-                // Try signing in with existing account
-                val signInRes = runCatching {
-                    apiService.signInWithPassword(mapOf("email" to validEmail, "password" to securePass))
-                }.getOrNull()
-
-                if (signInRes != null && signInRes.isSuccessful && signInRes.body() != null) {
-                    val body = signInRes.body()!!
-                    accessToken = body.accessToken
-                    refreshToken = body.refreshToken
-                    body.user?.id?.let { userId = it }
-                } else {
-                    // Try signing up if user does not exist
-                    val signUpRes = runCatching {
-                        apiService.signUp(
-                            mapOf(
-                                "email" to validEmail,
-                                "password" to securePass,
-                                "data" to mapOf("full_name" to name)
-                            )
-                        )
-                    }.getOrNull()
-
-                    if (signUpRes != null && signUpRes.isSuccessful && signUpRes.body() != null) {
-                        val body = signUpRes.body()!!
-                        accessToken = body.accessToken
-                        refreshToken = body.refreshToken
-                        body.user?.id?.let { userId = it }
-                    }
-                }
-            }
-
-            // Fallback token if offline or mock environment
-            val finalToken = accessToken ?: "session_token_$userId"
-
-            // Save session credentials with refresh token
+            // Sesi hanya disimpan dari token asli milik server. Tidak ada token cadangan.
             sessionManager.saveSession(
-                accessToken = finalToken,
-                refreshToken = refreshToken,
+                accessToken = authData.accessToken,
+                refreshToken = authData.refreshToken,
                 userId = userId
             )
 
-            // Try fetching existing profile from Supabase
-            val remoteProfiles = runCatching {
-                apiService.getProfile("eq.$userId")
-            }.getOrNull()
-
-            val profile: UserProfile = if (!remoteProfiles.isNullOrEmpty()) {
-                val p = remoteProfiles.first().toDomain()
-                sessionManager.updateRtId(p.rtId, p.role.name)
-                p
-            } else {
-                val newProfile = UserProfile(
-                    id = userId,
-                    rtId = null,
-                    fullName = name.ifBlank { "Warga Baru" },
-                    email = email.ifBlank { null },
-                    avatarPath = null,
-                    houseInfo = null,
-                    phoneNumber = null,
-                    role = UserRole.WARGA,
-                    isActive = true,
-                    createdAt = System.currentTimeMillis().toString(),
-                    updatedAt = System.currentTimeMillis().toString()
+            // Profil dibuat server (trigger handle_new_user); selalu dibaca dari server.
+            val dto = apiService.getProfile("eq.$userId").firstOrNull()
+            if (dto == null) {
+                sessionManager.clearSession()
+                return@withContext Resource.Error(
+                    AppError.LoginFailed("Profil pengguna tidak ditemukan di server")
                 )
-                newProfile
             }
-
+            val profile = dto.toDomain()
+            sessionManager.updateRtId(profile.rtId, profile.role.name)
             profileDao.insertProfile(ProfileEntity.fromDomain(profile))
             Resource.Success(profile)
+        } catch (e: retrofit2.HttpException) {
+            sessionManager.clearSession()
+            val body = runCatching { e.response()?.errorBody()?.string() }.getOrNull()
+            Resource.Error(AppError.LoginFailed(describeAuthFailure(e.code(), body)))
         } catch (e: Exception) {
+            sessionManager.clearSession()
             Resource.Error(ExceptionMapper.map(e))
         }
+    }
+
+    private fun describeAuthFailure(code: Int, body: String?): String {
+        val detail = runCatching {
+            val json = org.json.JSONObject(body.orEmpty())
+            listOf("msg", "error_description", "message", "error")
+                .firstNotNullOfOrNull { key -> json.optString(key, "").takeIf { it.isNotBlank() } }
+        }.getOrNull()
+        return "HTTP $code" + (detail?.let { ": $it" } ?: "")
     }
 
     override suspend fun signOut(): Resource<Unit> = withContext(Dispatchers.IO) {

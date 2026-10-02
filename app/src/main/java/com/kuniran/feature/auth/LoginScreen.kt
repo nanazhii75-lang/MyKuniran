@@ -41,7 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.kuniran.R
+import com.kuniran.core.common.AppError
 import kotlinx.coroutines.launch
 
 @Composable
@@ -56,9 +58,6 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var fullNameInput by remember { mutableStateOf("Warga Desa") }
-    var emailInput by remember { mutableStateOf("warga@mykuniran.app") }
-
     LaunchedEffect(uiState.currentUser) {
         val user = uiState.currentUser
         if (user != null) {
@@ -68,7 +67,12 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
-            snackbarHostState.showSnackbar(context.getString(err.messageRes))
+            val text = if (err is AppError.LoginFailed) {
+                context.getString(err.messageRes, err.detail ?: "-")
+            } else {
+                context.getString(err.messageRes)
+            }
+            snackbarHostState.showSnackbar(text)
             viewModel.clearError()
         }
     }
@@ -136,44 +140,17 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                OutlinedTextField(
-                    value = fullNameInput,
-                    onValueChange = { fullNameInput = it },
-                    label = { Text(stringResource(R.string.field_profile_name)) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("login_name_input"),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = emailInput,
-                    onValueChange = { emailInput = it },
-                    label = { Text(stringResource(R.string.field_profile_email)) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("login_email_input"),
-                    shape = RoundedCornerShape(12.dp)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
                 Button(
                     onClick = {
                         coroutineScope.launch {
                             val result = googleSignInHelper.signIn()
                             result.onSuccess { cred ->
-                                val name = cred.displayName ?: cred.givenName ?: fullNameInput
-                                val email = cred.id
-                                val idToken = cred.idToken
-                                viewModel.signInWithGoogle(name, email, idToken)
-                            }.onFailure {
-                                // Fallback to manual form data
-                                viewModel.signInWithGoogle(fullNameInput, emailInput)
+                                viewModel.signInWithGoogle(cred.idToken)
+                            }.onFailure { error ->
+                                // Batal memilih akun bukan kesalahan; selain itu tampilkan apa adanya
+                                if (error !is GetCredentialCancellationException) {
+                                    viewModel.onGoogleSignInFailed(error)
+                                }
                             }
                         }
                     },
