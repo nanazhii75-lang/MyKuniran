@@ -21,9 +21,10 @@ alter table public.profiles
 create index if not exists profiles_block_idx on public.profiles (rt_id, house_block);
 
 -- 3. Ensure post_type supports 'DISKUSI'
-alter type post_type add value if not exists 'DISKUSI';
+-- (nilai enum DISKUSI sekarang ada di 0010_enum_diskusi.sql)
 
 -- 4. Secure RPC rt_people(): Return RT members without leaking sensitive NIK or birth dates
+drop function if exists public.rt_people();
 create or replace function public.rt_people()
 returns table (
   id           uuid,
@@ -42,7 +43,7 @@ declare
   v_uid uuid := private.require_user();
   v_rt uuid;
 begin
-  select rt_id into v_rt from profiles where id = v_uid and is_active;
+  select pr.rt_id into v_rt from profiles pr where pr.id = v_uid and pr.is_active;
   if v_rt is null then
     perform private.app_fail('NO_RT', 'Anda belum tergabung di RT mana pun');
   end if;
@@ -79,7 +80,7 @@ declare
   v_net_balance numeric(14,0) := 0;
   v_monthly jsonb;
 begin
-  select rt_id into v_rt from profiles where id = v_uid and is_active;
+  select pr.rt_id into v_rt from profiles pr where pr.id = v_uid and pr.is_active;
   if v_rt is null then
     perform private.app_fail('NO_RT', 'Anda belum tergabung di RT mana pun');
   end if;
@@ -97,13 +98,13 @@ begin
   into v_monthly
   from (
     select
-      to_char(transaction_date, 'YYYY-MM') as month,
+      to_char(transaction_date at time zone 'Asia/Jakarta', 'YYYY-MM') as month,
       coalesce(sum(case when type = 'MASUK' then amount else 0 end), 0) as income,
       coalesce(sum(case when type = 'KELUAR' then amount else 0 end), 0) as expense,
       coalesce(sum(case when type = 'MASUK' then amount else -amount end), 0) as net
     from finances
     where rt_id = v_rt and deleted_at is null
-    group by to_char(transaction_date, 'YYYY-MM')
+    group by to_char(transaction_date at time zone 'Asia/Jakarta', 'YYYY-MM')
     order by month desc
     limit 12
   ) m;

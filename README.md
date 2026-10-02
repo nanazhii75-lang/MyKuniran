@@ -125,3 +125,42 @@ Build hanya di GitHub Actions. Tanpa Gradle wrapper di repo: CI memasang Gradle 
 
 Secrets repo yang dibutuhkan job `release`:
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `GOOGLE_WEB_CLIENT_ID`, `GOOGLE_ANDROID_CLIENT_ID`, `GOOGLE_SERVICES_JSON`, `KEYSTORE_BASE64`, `STORE_PASSWORD`, `KEY_PASSWORD` (alias key: `upload`).
+
+---
+
+<!-- STATUS-VERIFIKASI -->
+## ✅ Status Verifikasi & Progres
+
+Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi fitur di atas adalah target rancangan; setiap fitur baru dianggap berfungsi setelah lolos uji di perangkat fisik.
+
+### Terverifikasi (2 Okt 2026)
+- **Kompilasi CI:** kode `com.kuniran` terkompilasi di GitHub Actions (BUILD SUCCESSFUL), termasuk perbaikan login.
+- **Keystore & Firebase:** SHA-1 keystore sama dengan yang terdaftar di `google-services.json` (package `com.kuniran`).
+- **Login:** login cadangan email/sandi tebakan, akun bersama bawaan, dan token palsu telah dihapus. Login hanya memakai Google ID token asli ke Supabase; error server ditampilkan apa adanya. *Belum diuji di HP.*
+- **Skema Supabase (proyek baru):** 13 migrasi dijalankan berurutan di SQL Editor tanpa error. Terbukti dari query verifikasi:
+  - 10 tabel, seluruhnya `rowsecurity = true`; peran `anon` tidak punya hak di tabel `public`.
+  - Trigger `trg_handle_new_user` pada `auth.users` ada (pembuat profil saat login pertama).
+  - Fungsi `rt_people`, `create_rt`, `request_join_rt`, `update_finance_category` (4 argumen), `get_finance_summary` ada.
+  - Pembatas laju aktif di `preview_rt`, `request_join_rt`, `check_username_available`.
+  - Enum `post_type` memuat `DISKUSI`; kebijakan `post_rsvps` (4) dan `warga_activities` (2) sesuai rancangan.
+  - Peran `postgres` memiliki `bypassrls`, sehingga fungsi pembantu RLS (`security definer`) bekerja sesuai asumsi.
+- **Uji isolasi RT (Postgres lokal, 38 skenario):** akun RT lain tidak dapat membaca/menulis pos, keuangan, presensi, RSVP, maupun profil RT lain.
+
+### Urutan menjalankan migrasi (SQL Editor, satu file satu kali Run)
+`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013`
+> `0010` wajib dijalankan sendiri agar nilai enum `DISKUSI` ter-commit sebelum dipakai `0013`.
+
+### Perbaikan yang dibuat dari temuan review
+- Urutan `0006`/`0007` ditukar (RPC memerlukan view); `0011` tidak lagi gagal (`rt_people` di-drop dulu, kolom ambigu diperbaiki).
+- Forum `DISKUSI` kini boleh diposting; Bendahara dapat menambah pos lewat RPC; pos hanya dapat diubah Pengurus atau Bendahara pos itu sendiri.
+- Bulan ringkasan keuangan dihitung zona WIB; RSVP tidak bisa lintas RT; nama presensi dan waktu ditetapkan server, satu kali per kegiatan per hari.
+- Auto-approve gabung RT tetap ada (keputusan pemilik: warga desa umumnya saling kenal), dengan pembatas laju 15 percobaan/10 menit.
+
+### Belum benar / belum selesai (jangan dianggap berfungsi)
+- **Kode Kotlin belum disesuaikan** dengan perubahan SQL: `request_join_rt` kini mengembalikan `NOT_FOUND`; `update_finance_category` menerima `p_is_archived`; kode error baru `RATE_LIMIT_LOOKUP`.
+- **Presensi QR:** riwayat disimpan di memori lokal dan kegagalan kirim ke server ditelan; belum bisa dipercaya.
+- **Postingan baru:** ditulis ke database lokal lebih dulu, sehingga bisa tampil walau server menolak.
+- **Arsip pos keuangan:** hanya berlaku di lokal sebelum perbaikan SQL ini.
+- **Antrean offline (outbox):** tabel ada tetapi tidak dipakai; aplikasi belum offline-first.
+- **Keamanan lanjutan:** nonce Google, enkripsi token sesi, R8 untuk rilis, audit Edge Function `send-rt-notification`.
+- **Belum diuji di perangkat fisik:** login Google, alur RT, keuangan, presensi, RSVP, notifikasi FCM.
