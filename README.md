@@ -147,8 +147,15 @@ Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi f
   - Peran `postgres` memiliki `bypassrls`, sehingga fungsi pembantu RLS (`security definer`) bekerja sesuai asumsi.
 - **Uji isolasi RT (Postgres lokal, 38 skenario):** akun RT lain tidak dapat membaca/menulis pos, keuangan, presensi, RSVP, maupun profil RT lain.
 
+### Terverifikasi (3 Okt 2026)
+- **Penyebab gagal buat pengumuman/agenda/forum:** Retrofit menolak parameter `Map<String, Any?>` (di JVM menjadi `Map<String, ?>`, bertipe wildcard) dan melempar `IllegalArgumentException` sebelum request keluar. Diperbaiki dengan `@JvmSuppressWildcards` pada `SupabaseApiService`. Berlaku untuk 11 method (pos, kategori, transaksi, warga, presensi, RSVP, notifikasi).
+- **Uji di 1 HP:** pengumuman, agenda, dan forum berhasil dibuat; ketiganya tersimpan di server dengan `author_id` dan `rt_id` yang benar (dibuktikan lewat query SQL pada `posts`).
+- **Database:** enum `post_type` memuat `DISKUSI`; kebijakan `posts_insert` sesuai migrasi 0013; trigger `trg_posts_guard`, `trg_posts_rate_limit`, `trg_updated_at` terpasang.
+- **Migrasi 0014 (`post_notifications`)** dijalankan: RLS aktif, 0 policy, `authenticated` tidak dapat membaca (hanya `service_role`).
+- Detail error teknis tampil di banner untuk kesalahan tak dikenal (SEMENTARA, untuk pelacakan; kembalikan ke build debug saja).
+
 ### Urutan menjalankan migrasi (SQL Editor, satu file satu kali Run)
-`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013`
+`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013` `0014_notification_log`
 > `0010` wajib dijalankan sendiri agar nilai enum `DISKUSI` ter-commit sebelum dipakai `0013`.
 
 ### Perbaikan yang dibuat dari temuan review
@@ -161,8 +168,10 @@ Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi f
 - **Login Google di HP:** bottom sheet gagal (`[28439] User disabled the feature`, terjadi sebelum Supabase dipanggil). Diganti ke alur tombol `GetSignInWithGoogleOption` sesuai dokumentasi Android; hasil uji ulang belum ada.
 - **Kode Kotlin belum disesuaikan** dengan perubahan SQL: `request_join_rt` kini mengembalikan `NOT_FOUND`; `update_finance_category` menerima `p_is_archived`; kode error baru `RATE_LIMIT_LOOKUP`.
 - **Presensi QR:** riwayat disimpan di memori lokal dan kegagalan kirim ke server ditelan; belum bisa dipercaya.
-- **Postingan baru:** ditulis ke database lokal lebih dulu, sehingga bisa tampil walau server menolak.
 - **Arsip pos keuangan:** hanya berlaku di lokal sebelum perbaikan SQL ini.
 - **Antrean offline (outbox):** tabel ada tetapi tidak dipakai; aplikasi belum offline-first.
-- **Keamanan lanjutan:** nonce Google, enkripsi token sesi, R8 untuk rilis, audit Edge Function `send-rt-notification`.
+- **Notifikasi push (ditulis ulang 3 Okt 2026, BELUM dideploy dan BELUM diuji):** `send-rt-notification` kini memvalidasi JWT, menurunkan RT dari profil pemanggil, hanya menerima `post_id`, dan memakai FCM HTTP v1 (API lama sudah dimatikan Google). `agenda-reminder-h1` kini hanya bisa dipicu penjadwal dengan header `x-cron-secret`, hari dihitung WIB. Perlu secret `FCM_SERVICE_ACCOUNT_B64` dan `CRON_SECRET`, deploy lewat Dashboard, dan penjadwal pg_cron (belum dibuat).
+- **Sinkron antar warga:** belum ada Realtime di klien; pos baru tampil di perangkat lain hanya setelah sinkron (saat Beranda dibuka/segarkan). Belum diuji dengan 2 akun.
+- **Endpoint klien tanpa tabel di migrasi:** `warga` dan `finance_records` dipanggil `SupabaseApiService` tetapi tidak ada di migrasi; perlu dicek di database asli.
+- **Keamanan lanjutan:** nonce Google, enkripsi token sesi, R8 untuk rilis.
 - **Belum diuji di perangkat fisik:** login Google, alur RT, keuangan, presensi, RSVP, notifikasi FCM.
