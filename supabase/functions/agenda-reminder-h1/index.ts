@@ -9,6 +9,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 // ---------- FCM HTTP v1 (autentikasi OAuth2 akun layanan) ----------
 
+type ServiceAccount = { project_id: string; client_email: string; private_key: string };
+
 function loadServiceAccount(): ServiceAccount | null {
   const b64 = Deno.env.get("FCM_SERVICE_ACCOUNT_B64");
   if (!b64) return null;
