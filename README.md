@@ -158,6 +158,7 @@ Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi f
 - Auto-approve gabung RT tetap ada (keputusan pemilik: warga desa umumnya saling kenal), dengan pembatas laju 15 percobaan/10 menit.
 
 ### Belum benar / belum selesai (jangan dianggap berfungsi)
+- **Login Google di HP:** bottom sheet gagal (`[28439] User disabled the feature`, terjadi sebelum Supabase dipanggil). Diganti ke alur tombol `GetSignInWithGoogleOption` sesuai dokumentasi Android; hasil uji ulang belum ada.
 - **Kode Kotlin belum disesuaikan** dengan perubahan SQL: `request_join_rt` kini mengembalikan `NOT_FOUND`; `update_finance_category` menerima `p_is_archived`; kode error baru `RATE_LIMIT_LOOKUP`.
 - **Presensi QR:** riwayat disimpan di memori lokal dan kegagalan kirim ke server ditelan; belum bisa dipercaya.
 - **Postingan baru:** ditulis ke database lokal lebih dulu, sehingga bisa tampil walau server menolak.

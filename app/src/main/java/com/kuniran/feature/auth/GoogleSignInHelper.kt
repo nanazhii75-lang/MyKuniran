@@ -5,7 +5,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.kuniran.core.network.SupabaseConfig
 
@@ -14,14 +14,13 @@ class GoogleSignInHelper(private val context: Context) {
 
     suspend fun signIn(): Result<GoogleIdTokenCredential> {
         return try {
-            val googleIdOption = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(SupabaseConfig.googleWebClientId)
-                .setAutoSelectEnabled(false)
+            // Alur tombol (dokumentasi Android): login dipicu tombol "Masuk dengan Google".
+            // Tidak bergantung pada bottom sheet / One Tap yang bisa dimatikan di akun Google.
+            val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(SupabaseConfig.googleWebClientId)
                 .build()
 
             val request = GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
+                .addCredentialOption(signInWithGoogleOption)
                 .build()
 
             val response = credentialManager.getCredential(
