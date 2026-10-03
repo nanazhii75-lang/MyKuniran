@@ -10,8 +10,8 @@
     <string name="nav_settings">Pengaturan</string>
 
     <!-- Auth & Onboarding -->
-    <string name="auth_welcome_title">Sugeng Rawuh</string>
-    <string name="auth_welcome_desc">Aplikasi resmi warga RT untuk komunikasi rukun warga, transparansi kas desa, dan agenda bersama.</string>
+    <string name="auth_welcome_title">Halo Kuniran</string>
+    <string name="auth_welcome_desc">Aplikasi resmi warga RT untuk komunikasi.</string>
     <string name="auth_btn_google">Masuk dengan Google</string>
     <string name="auth_signing_in">Menghubungkan akun...</string>
     <string name="auth_choose_status">Pilih Keanggotaan RT</string>
