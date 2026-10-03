@@ -9,8 +9,10 @@ import com.kuniran.domain.usecase.CreatePostUseCase
 import com.kuniran.domain.usecase.DeletePostUseCase
 import com.kuniran.domain.usecase.GetCurrentUserUseCase
 import com.kuniran.domain.usecase.GetRtFeedUseCase
+import com.kuniran.domain.usecase.GetRtMembersUseCase
 import com.kuniran.domain.usecase.PinPostUseCase
 import com.kuniran.domain.usecase.SyncFeedUseCase
+import com.kuniran.domain.usecase.SyncMembersUseCase
 import com.kuniran.domain.usecase.UnpinPostUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +28,9 @@ class HomeViewModel(
     private val pinPostUseCase: PinPostUseCase,
     private val unpinPostUseCase: UnpinPostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
-    private val rtRepository: RtRepository
+    private val rtRepository: RtRepository,
+    private val getRtMembersUseCase: GetRtMembersUseCase,
+    private val syncMembersUseCase: SyncMembersUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -40,6 +44,14 @@ class HomeViewModel(
                     observeFeed(user.rtId)
                     refreshFeed(user.rtId)
                     fetchRtInfo(user.rtId)
+                }
+            }
+        }
+        // Nama penulis diambil dari daftar orang di RT (sudah dibatasi server per RT)
+        viewModelScope.launch {
+            getRtMembersUseCase().collect { members ->
+                _uiState.update { state ->
+                    state.copy(authorNames = members.associate { it.id to it.fullName })
                 }
             }
         }
@@ -61,15 +73,49 @@ class HomeViewModel(
         }
     }
 
-    fun refreshFeed(rtId: String? = _uiState.value.currentUser?.rtId) {
+    /**
+     * @param silent true untuk penyegaran otomatis: tanpa indikator dan tanpa pesan galat
+     * (misalnya saat sinyal lemah), supaya warga tidak terganggu.
+     */
+    fun refreshFeed(rtId: String? = _uiState.value.currentUser?.rtId, silent: Boolean = false) {
         val targetRt = rtId ?: return
         viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
-            when (val res = syncFeedUseCase(targetRt)) {
-                is Resource.Error -> _uiState.update { it.copy(isRefreshing = false, error = res.error) }
+            if (!silent) _uiState.update { it.copy(isRefreshing = true) }
+            val res = syncFeedUseCase(targetRt)
+
+            // Muat ulang daftar orang hanya bila ada penulis yang namanya belum dikenal
+            val state = _uiState.value
+            val hasUnknownAuthor = state.posts.any { it.authorId !in state.authorNames }
+            if (!silent || hasUnknownAuthor) syncMembersUseCase()
+
+            when {
+                res is Resource.Error && !silent ->
+                    _uiState.update { it.copy(isRefreshing = false, error = res.error) }
                 else -> _uiState.update { it.copy(isRefreshing = false) }
             }
         }
+    }
+
+    /**
+     * Kirim tulisan dari kolom tulis di home. Judul dibentuk dari baris pertama
+     * (database mewajibkan judul), isi menyimpan seluruh teks.
+     */
+    fun sendPost(text: String, asAnnouncement: Boolean, onSuccess: () -> Unit) {
+        if (_uiState.value.isLoading) return
+        val content = text.trim().takeSafe(CONTENT_MAX)
+        if (content.isEmpty()) return
+        val title = content.lineSequence().first().takeSafe(TITLE_MAX).trim()
+        createPost(
+            title = title,
+            content = content,
+            type = if (asAnnouncement) PostType.PENGUMUMAN else PostType.DISKUSI,
+            eventDate = null,
+            eventLocation = null,
+            onSuccess = {
+                onSuccess()
+                refreshFeed()
+            }
+        )
     }
 
     fun createPost(
@@ -109,7 +155,7 @@ class HomeViewModel(
         viewModelScope.launch {
             when (val res = pinPostUseCase(postId)) {
                 is Resource.Error -> _uiState.update { it.copy(error = res.error) }
-                else -> Unit
+                else -> refreshFeed(silent = true)
             }
         }
     }
@@ -132,11 +178,19 @@ class HomeViewModel(
         }
     }
 
-    fun setFilter(filter: String) {
-        _uiState.update { it.copy(selectedFilter = filter) }
-    }
-
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    private companion object {
+        const val TITLE_MAX = 100     // batas database 150
+        const val CONTENT_MAX = 5000  // batas database 5000
+    }
+}
+
+/** Potong tanpa memenggal pasangan surrogate (emoji) di tengah. */
+private fun String.takeSafe(max: Int): String {
+    if (length <= max) return this
+    val cut = if (this[max - 1].isHighSurrogate()) max - 1 else max
+    return substring(0, cut)
 }

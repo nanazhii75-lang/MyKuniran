@@ -101,10 +101,13 @@ class PostRepositoryImpl(
             }
             postDao.insertPost(PostEntity.fromDomain(post))
 
-            // Minta server menotifikasi anggota RT. Hanya post_id yang dikirim; server memverifikasi
-            // pemanggil, RT, dan isi pos dari database. Kegagalan push tidak boleh menggagalkan pos.
-            runCatching {
-                apiService.sendRtNotification(mapOf("post_id" to newId))
+            // Push hanya untuk pengumuman dan agenda; obrolan (DISKUSI) tidak memicu notifikasi.
+            // Hanya post_id yang dikirim; server memverifikasi pemanggil, RT, dan isi pos dari database.
+            // Kegagalan push tidak boleh menggagalkan pos.
+            if (type != PostType.DISKUSI) {
+                runCatching {
+                    apiService.sendRtNotification(mapOf("post_id" to newId))
+                }
             }
 
             Resource.Success(Unit)

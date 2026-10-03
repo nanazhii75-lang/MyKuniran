@@ -1,40 +1,31 @@
 package com.kuniran.feature.home
 
-import com.kuniran.core.common.asText
-
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -44,32 +35,42 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.kuniran.R
+import com.kuniran.core.common.DateTimeUtils
+import com.kuniran.core.common.asText
+import com.kuniran.core.model.Post
 import com.kuniran.core.model.PostType
-import com.kuniran.core.ui.components.KuniranEmptyState
 import com.kuniran.core.ui.components.KuniranTopAppBar
+import kotlinx.coroutines.delay
+
+private const val POST_MAX_LENGTH = 5000
+private const val FEED_POLL_INTERVAL_MS = 30_000L
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onNavigateCalendarRsvp: () -> Unit = {},
-    onNavigateForum: () -> Unit = {},
-    onNavigateQrScanner: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var showCreateDialog by remember { mutableStateOf(false) }
+    var draft by rememberSaveable { mutableStateOf("") }
+    var asAnnouncement by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
@@ -78,16 +79,28 @@ fun HomeScreen(
         }
     }
 
-    val filteredPosts = remember(uiState.posts, uiState.selectedFilter) {
-        when (uiState.selectedFilter) {
-            "PENGUMUMAN" -> uiState.posts.filter { it.type == PostType.PENGUMUMAN }
-            "AGENDA" -> uiState.posts.filter { it.type == PostType.AGENDA }
-            "FINANCE_REPORT" -> uiState.posts.filter { it.type == PostType.FINANCE_REPORT }
-            else -> uiState.posts
+    // Penyegaran otomatis selama layar terlihat (pengganti sementara sampai Realtime terpasang)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                viewModel.refreshFeed(silent = true)
+                delay(FEED_POLL_INTERVAL_MS)
+            }
         }
     }
 
+    // Urutan dari database: yang disematkan dulu, lalu terbaru. Informasi Hari Ini mengambil
+    // pengumuman teratas, jadi pengumuman yang disematkan admin selalu menang.
+    val featured = remember(uiState.posts) {
+        uiState.posts.firstOrNull { it.type == PostType.PENGUMUMAN }
+    }
+    val feed = remember(uiState.posts, featured) {
+        uiState.posts.filter { it.id != featured?.id }
+    }
+
     val rtLabel = uiState.rtGroup?.displayLabel ?: stringResource(R.string.nav_home)
+    val fallbackAuthor = stringResource(R.string.home_author_fallback)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -115,157 +128,224 @@ fun HomeScreen(
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCreateDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.testTag("btn_create_post_fab")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.home_btn_new_post)
-                )
-            }
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
+                .testTag("feed_list"),
+            contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Quick Access Features (Agenda, Forum, Presensi)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                QuickAccessButton(
-                    icon = Icons.Default.CalendarToday,
-                    label = stringResource(R.string.home_tab_agenda),
-                    onClick = onNavigateCalendarRsvp,
-                    modifier = Modifier.weight(1f).testTag("btn_home_quick_calendar")
-                )
-                QuickAccessButton(
-                    icon = Icons.Default.Forum,
-                    label = "Forum",
-                    onClick = onNavigateForum,
-                    modifier = Modifier.weight(1f).testTag("btn_home_quick_forum")
-                )
-                QuickAccessButton(
-                    icon = Icons.Default.QrCodeScanner,
-                    label = "Presensi",
-                    onClick = onNavigateQrScanner,
-                    modifier = Modifier.weight(1f).testTag("btn_home_quick_qr")
+            item(key = "info_today") {
+                InfoTodayCard(
+                    post = featured,
+                    authorName = featured?.let { uiState.authorNames[it.authorId] ?: it.authorName.ifBlank { fallbackAuthor } }
                 )
             }
 
-            // Filter row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = uiState.selectedFilter == "ALL",
-                    onClick = { viewModel.setFilter("ALL") },
-                    label = { Text(stringResource(R.string.home_tab_all), maxLines = 1, softWrap = false) }
-                )
-                FilterChip(
-                    selected = uiState.selectedFilter == "PENGUMUMAN",
-                    onClick = { viewModel.setFilter("PENGUMUMAN") },
-                    label = { Text(stringResource(R.string.home_tab_pengumuman), maxLines = 1, softWrap = false) }
-                )
-                FilterChip(
-                    selected = uiState.selectedFilter == "AGENDA",
-                    onClick = { viewModel.setFilter("AGENDA") },
-                    label = { Text(stringResource(R.string.home_tab_agenda), maxLines = 1, softWrap = false) }
-                )
-                FilterChip(
-                    selected = uiState.selectedFilter == "FINANCE_REPORT",
-                    onClick = { viewModel.setFilter("FINANCE_REPORT") },
-                    label = { Text(stringResource(R.string.home_tab_finance), maxLines = 1, softWrap = false) }
-                )
-            }
-
-            if (filteredPosts.isEmpty()) {
-                KuniranEmptyState(
-                    icon = Icons.Default.Campaign,
-                    message = stringResource(R.string.home_empty_feed),
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .testTag("feed_list"),
-                    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(filteredPosts, key = { it.id }) { post ->
-                        PostItemCard(
-                            post = post,
-                            currentUserId = uiState.currentUser?.id,
-                            currentUserRole = uiState.currentUser?.role,
-                            onPinClick = { viewModel.pinPost(post.id) },
-                            onUnpinClick = { viewModel.unpinPost(post.id) },
-                            onDeleteClick = { viewModel.deletePost(post.id) }
-                        )
-                    }
-                }
-            }
-        }
-
-        if (showCreateDialog) {
-            CreatePostDialog(
-                onDismiss = { showCreateDialog = false },
-                onSubmit = { title, content, type, eventDate, eventLocation ->
-                    showCreateDialog = false
-                    viewModel.createPost(
-                        title = title,
-                        content = content,
-                        type = type,
-                        eventDate = eventDate,
-                        eventLocation = eventLocation,
-                        onSuccess = {
-                            viewModel.refreshFeed()
+            item(key = "composer") {
+                PostComposer(
+                    draft = draft,
+                    onDraftChange = { draft = it },
+                    asAnnouncement = asAnnouncement,
+                    onToggleAnnouncement = { asAnnouncement = !asAnnouncement },
+                    isSending = uiState.isLoading,
+                    onSend = {
+                        viewModel.sendPost(draft, asAnnouncement) {
+                            draft = ""
+                            asAnnouncement = false
                         }
+                    }
+                )
+            }
+
+            if (feed.isEmpty()) {
+                item(key = "empty") {
+                    Text(
+                        text = stringResource(R.string.home_empty_chat),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp)
                     )
                 }
-            )
+            } else {
+                items(feed, key = { it.id }) { post ->
+                    PostItemCard(
+                        post = post,
+                        authorName = uiState.authorNames[post.authorId]
+                            ?: post.authorName.ifBlank { fallbackAuthor },
+                        currentUserId = uiState.currentUser?.id,
+                        currentUserRole = uiState.currentUser?.role,
+                        onPinClick = { viewModel.pinPost(post.id) },
+                        onUnpinClick = { viewModel.unpinPost(post.id) },
+                        onDeleteClick = { viewModel.deletePost(post.id) }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun QuickAccessButton(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit,
+private fun InfoTodayCard(
+    post: Post?,
+    authorName: String?,
     modifier: Modifier = Modifier
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("card_info_today"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Campaign,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.home_info_today_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            if (post == null) {
+                Text(
+                    text = stringResource(R.string.home_info_today_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                if (post.showsSeparateTitle()) {
+                    Text(
+                        text = post.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                if (post.content.isNotBlank()) {
+                    Text(
+                        text = post.content,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 5,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Text(
+                    text = listOfNotNull(authorName, DateTimeUtils.formatWibDate(post.createdAt))
+                        .joinToString(" \u2022 "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PostComposer(
+    draft: String,
+    onDraftChange: (String) -> Unit,
+    asAnnouncement: Boolean,
+    onToggleAnnouncement: () -> Unit,
+    isSending: Boolean,
+    onSend: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { if (it.length <= POST_MAX_LENGTH) onDraftChange(it) },
+                placeholder = { Text(stringResource(R.string.home_composer_hint)) },
+                minLines = 2,
+                maxLines = 5,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("input_home_post")
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                FilterChip(
+                    selected = asAnnouncement,
+                    onClick = onToggleAnnouncement,
+                    label = {
+                        Text(
+                            text = stringResource(R.string.home_composer_announcement),
+                            maxLines = 1
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Campaign,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    modifier = Modifier.testTag("chip_post_announcement")
+                )
+
+                FilledIconButton(
+                    onClick = onSend,
+                    enabled = draft.isNotBlank() && !isSending,
+                    modifier = Modifier.testTag("btn_send_post")
+                ) {
+                    if (isSending) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(R.string.home_btn_send)
+                        )
+                    }
+                }
+            }
+
+            if (asAnnouncement) {
+                Text(
+                    text = stringResource(R.string.home_composer_announcement_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

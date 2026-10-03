@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.kuniran.R
 import com.kuniran.core.common.CurrencyFormatter
@@ -49,6 +50,7 @@ import com.kuniran.core.ui.components.KuniranBadge
 @Composable
 fun PostItemCard(
     post: Post,
+    authorName: String,
     currentUserId: String?,
     currentUserRole: UserRole?,
     onPinClick: () -> Unit,
@@ -60,6 +62,8 @@ fun PostItemCard(
     val isAuthor = currentUserId == post.authorId
     val isAdmin = currentUserRole == UserRole.ADMIN_RT
     val canDelete = (isAuthor || isAdmin) && post.type != PostType.FINANCE_REPORT
+    // Sematan hanya untuk pengumuman dan hanya admin RT (sama dengan aturan server)
+    val canPin = isAdmin && post.type == PostType.PENGUMUMAN
 
     Card(
         modifier = modifier
@@ -84,8 +88,17 @@ fun PostItemCard(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
+                    Text(
+                        text = authorName,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
                     when (post.type) {
                         PostType.PENGUMUMAN -> {
                             KuniranBadge(
@@ -108,13 +121,7 @@ fun PostItemCard(
                                 contentColor = MaterialTheme.colorScheme.tertiary
                             )
                         }
-                        PostType.DISKUSI -> {
-                            KuniranBadge(
-                                text = "Diskusi",
-                                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        PostType.DISKUSI -> Unit
                     }
 
                     if (post.isPinned) {
@@ -144,7 +151,7 @@ fun PostItemCard(
                     }
                 }
 
-                if (isAuthor || canDelete) {
+                if (canPin || canDelete) {
                     Box {
                         IconButton(
                             onClick = { menuExpanded = true },
@@ -161,7 +168,7 @@ fun PostItemCard(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            if (isAuthor && post.type != PostType.FINANCE_REPORT) {
+                            if (canPin) {
                                 if (post.isPinned) {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(R.string.post_menu_unpin)) },
@@ -201,21 +208,22 @@ fun PostItemCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Title
-            Text(
-                text = post.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            // Judul hanya bila terpisah dari isi (pengumuman lama, laporan kas, agenda)
+            if (post.showsSeparateTitle()) {
+                Text(
+                    text = post.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
-            // Content if not empty
             if (post.content.isNotBlank()) {
-                Spacer(modifier = Modifier.height(6.dp))
+                if (post.showsSeparateTitle()) Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = post.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 

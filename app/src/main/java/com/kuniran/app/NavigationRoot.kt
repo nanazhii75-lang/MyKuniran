@@ -415,15 +415,12 @@ fun MainTabsScaffold(
                         container.pinPostUseCase,
                         container.unpinPostUseCase,
                         container.deletePostUseCase,
-                        container.rtRepository
+                        container.rtRepository,
+                        container.getRtMembersUseCase,
+                        container.syncMembersUseCase
                     )
                 }
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    onNavigateCalendarRsvp = onNavigateCalendarRsvp,
-                    onNavigateForum = onNavigateForum,
-                    onNavigateQrScanner = onNavigateQrScanner
-                )
+                HomeScreen(viewModel = homeViewModel)
             }
 
             composable(BottomNavTab.Members.route) {
