@@ -84,6 +84,8 @@ class AuthRepositoryImpl(
                 )
             }
             val profile = dto.toDomain()
+            // Harus diset sebelum profil masuk cache agar navigasi setelah login membacanya dengan benar.
+            sessionManager.setProfileComplete(!profile.phoneNumber.isNullOrBlank())
             sessionManager.updateRtId(profile.rtId, profile.role.name)
             profileDao.insertProfile(ProfileEntity.fromDomain(profile))
             Resource.Success(profile)
@@ -123,20 +125,27 @@ class AuthRepositoryImpl(
             val current = profileDao.getProfile(uid)?.toDomain()
                 ?: return@withContext Resource.Error(com.kuniran.core.common.AppError.SessionExpired)
 
+            val cleanName = fullName.trim()
+            val cleanPhone = phoneNumber
+                ?.let { com.kuniran.core.common.PhoneFormat.normalize(it) }
+                ?.takeIf { it.isNotBlank() }
+            val cleanHouse = houseInfo?.trim()?.takeIf { it.isNotBlank() }
+
             // Server dulu: hanya field yang memang diubah user (email/avatar tidak dikirim).
             val body = mapOf(
-                "full_name" to fullName,
-                "phone_number" to phoneNumber,
-                "house_info" to houseInfo
+                "full_name" to cleanName,
+                "phone_number" to cleanPhone,
+                "house_info" to cleanHouse
             )
             val response = apiService.updateProfile("eq.$uid", body)
             if (!response.isSuccessful) throw retrofit2.HttpException(response)
+            sessionManager.setProfileComplete(cleanPhone != null)
 
             // Cache lokal baru diperbarui setelah server menerima perubahan.
             val updated = current.copy(
-                fullName = fullName,
-                phoneNumber = phoneNumber,
-                houseInfo = houseInfo,
+                fullName = cleanName,
+                phoneNumber = cleanPhone,
+                houseInfo = cleanHouse,
                 updatedAt = System.currentTimeMillis().toString()
             )
             profileDao.insertProfile(ProfileEntity.fromDomain(updated))

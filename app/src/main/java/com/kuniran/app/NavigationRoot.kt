@@ -52,12 +52,15 @@ import com.kuniran.feature.home.HomeViewModel
 import com.kuniran.feature.members.MembersScreen
 import com.kuniran.feature.members.MembersViewModel
 import com.kuniran.feature.members.ResidentDirectoryScreen
+import com.kuniran.feature.profile.CompleteProfileScreen
+import com.kuniran.feature.profile.CompleteProfileViewModel
 import com.kuniran.feature.members.ResidentDirectoryViewModel
 import com.kuniran.feature.settings.SettingsScreen
 import com.kuniran.feature.settings.SettingsViewModel
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
+    object CompleteProfile : Screen("complete_profile")
     object ChooseRt : Screen("choose_rt")
     object JoinRt : Screen("join_rt")
     object CreateRt : Screen("create_rt")
@@ -89,7 +92,8 @@ fun NavigationRoot(
 ) {
     val rootNavController = rememberNavController()
     val startDestination = if (container.sessionManager.isLoggedIn()) {
-        if (!container.sessionManager.getRtId().isNullOrBlank()) Screen.Main.route
+        if (!container.sessionManager.isProfileComplete()) Screen.CompleteProfile.route
+        else if (!container.sessionManager.getRtId().isNullOrBlank()) Screen.Main.route
         else Screen.ChooseRt.route
     } else {
         Screen.Login.route
@@ -124,7 +128,11 @@ fun NavigationRoot(
             LoginScreen(
                 viewModel = authViewModel,
                 onLoginSuccess = { hasRt ->
-                    if (hasRt) {
+                    if (!container.sessionManager.isProfileComplete()) {
+                        rootNavController.navigate(Screen.CompleteProfile.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    } else if (hasRt) {
                         rootNavController.navigate(Screen.Main.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
@@ -132,6 +140,31 @@ fun NavigationRoot(
                         rootNavController.navigate(Screen.ChooseRt.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.CompleteProfile.route) {
+            val profileViewModel: CompleteProfileViewModel = viewModel {
+                CompleteProfileViewModel(
+                    container.getCurrentUserUseCase,
+                    container.updateProfileUseCase,
+                    container.signOutUseCase
+                )
+            }
+            CompleteProfileScreen(
+                viewModel = profileViewModel,
+                onDone = {
+                    val next = if (container.sessionManager.getRtId().isNullOrBlank())
+                        Screen.ChooseRt.route else Screen.Main.route
+                    rootNavController.navigate(next) {
+                        popUpTo(Screen.CompleteProfile.route) { inclusive = true }
+                    }
+                },
+                onSignedOut = {
+                    rootNavController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )

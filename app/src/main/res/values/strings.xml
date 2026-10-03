@@ -372,4 +372,11 @@
     <string name="settings_invite_copied">Nama pengenal disalin</string>
     <string name="settings_invite_admin_hint">Untuk mengganti, buka tab Wilayah RT.</string>
     <string name="settings_invite_share_text">Gabung %1$s di aplikasi Kuniran. Buka aplikasi, pilih Gabung RT, lalu masukkan nama pengenal: %2$s</string>
+    <string name="complete_profile_title">Lengkapi Profil</string>
+    <string name="complete_profile_desc">Nama ini yang akan dilihat warga RT Anda. Gunakan nama asli agar mudah dikenali.</string>
+    <string name="complete_profile_phone_note">Nomor ini terlihat oleh warga satu RT Anda.</string>
+    <string name="complete_profile_phone_error">Nomor tidak valid. Isi 8 sampai 15 angka, contoh 081234567890.</string>
+    <string name="complete_profile_house_optional">Alamat / Ciri Rumah (boleh dikosongkan)</string>
+    <string name="complete_profile_btn">Simpan dan Lanjut</string>
+    <string name="complete_profile_wrong_account">Bukan akun ini? Keluar</string>
 </resources>

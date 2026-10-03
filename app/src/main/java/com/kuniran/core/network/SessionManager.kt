@@ -87,6 +87,13 @@ class SessionManager(context: Context) {
 
     fun getDeviceToken(): String? = prefs.getString(KEY_DEVICE_TOKEN, null)
 
+    /** Profil dianggap lengkap bila nomor HP sudah terisi; dibaca sinkron untuk menentukan layar awal. */
+    fun isProfileComplete(): Boolean = prefs.getBoolean(KEY_PROFILE_DONE, false)
+
+    fun setProfileComplete(done: Boolean) {
+        prefs.edit().putBoolean(KEY_PROFILE_DONE, done).apply()
+    }
+
     companion object {
         private const val KEY_ACCESS_TOKEN = "key_access_token"
         private const val KEY_REFRESH_TOKEN = "key_refresh_token"
@@ -94,5 +101,6 @@ class SessionManager(context: Context) {
         private const val KEY_RT_ID = "key_rt_id"
         private const val KEY_USER_ROLE = "key_user_role"
         private const val KEY_DEVICE_TOKEN = "key_device_token"
+        private const val KEY_PROFILE_DONE = "key_profile_done"
     }
 }

@@ -100,7 +100,7 @@ internal fun SettingsProfileTab(
                 },
                 modifier = Modifier.fillMaxWidth().testTag("btn_save_profile"),
                 shape = RoundedCornerShape(12.dp),
-                enabled = fullName.isNotBlank() && !uiState.isLoading
+                enabled = fullName.isNotBlank() && phoneNumber.isNotBlank() && !uiState.isLoading
             ) {
                 Text(stringResource(R.string.btn_save_profile))
             }
