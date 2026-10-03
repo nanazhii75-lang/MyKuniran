@@ -306,7 +306,8 @@
     <string name="error_has_pending_request">Anda masih memiliki permintaan bergabung yang sedang diproses.</string>
     <string name="error_field_invalid">Isian belum lengkap atau format tidak sesuai.</string>
     <string name="error_username_invalid">Nama pengenal harus 5-32 karakter, diawali huruf, dan tanpa spasi.</string>
-    <string name="error_username_taken">Nama pengenal RT ini sudah dipakai oleh RT lain.</string>
+    <string name="error_username_taken">Nama pengenal ini tidak tersedia. Coba nama lain.</string>
+    <string name="error_username_cooldown">Nama pengenal baru bisa diganti lagi 30 hari setelah pergantian terakhir.</string>
     <string name="error_rate_limit_create_rt">Pendaftaran RT dibatasi maksimal 1 kali dalam 24 jam.</string>
     <string name="error_rate_limit_post">Terlalu banyak membuat pengumuman dalam 1 jam terakhir.</string>
     <string name="error_rt_not_found">RT dengan nama pengenal tersebut tidak ditemukan.</string>

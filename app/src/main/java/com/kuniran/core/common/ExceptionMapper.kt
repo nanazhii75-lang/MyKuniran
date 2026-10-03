@@ -70,6 +70,7 @@ object ExceptionMapper {
             upper.contains("FIELD_INVALID") -> AppError.FieldInvalid
             upper.contains("USERNAME_INVALID") -> AppError.UsernameInvalid
             upper.contains("USERNAME_TAKEN") -> AppError.UsernameTaken
+            upper.contains("USERNAME_COOLDOWN") -> AppError.UsernameCooldown
             upper.contains("RATE_LIMIT_CREATE_RT") -> AppError.RateLimitCreateRt
             upper.contains("RATE_LIMIT_POST") -> AppError.RateLimitPost
             upper.contains("RT_NOT_FOUND") -> AppError.RtNotFound

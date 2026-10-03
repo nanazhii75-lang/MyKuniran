@@ -76,6 +76,7 @@ Struktur database tersimpan pada direktori `/supabase/migrations/`:
 | `0008_storage.sql` | Konfigurasi bucket Supabase Storage (`avatars`, `finance-receipts`). |
 | `0009_realtime_privileges.sql` | Konfigurasi replikasi realtime Supabase. |
 | `0011_consolidate_schema.sql` | **Migrasi Konsolidasi**: Hapus tabel/view redundan, tambah `house_block`, RPC `rt_people()`, RPC `get_finance_summary()`, serta buat tabel `warga_activities` dan `post_rsvps`. |
+| `0015_username_hold.sql` | **Penahanan nama pengenal RT**: nama lama ditahan 90 hari untuk RT lain, jeda ganti 30 hari (ganti pertama bebas), nama terlarang, trigger penjaga `trg_guard_invite_username`, log `private.rt_username_log`. |
 
 ---
 
@@ -154,8 +155,11 @@ Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi f
 - **Migrasi 0014 (`post_notifications`)** dijalankan: RLS aktif, 0 policy, `authenticated` tidak dapat membaca (hanya `service_role`).
 - Detail error teknis tampil di banner untuk kesalahan tak dikenal (SEMENTARA, untuk pelacakan; kembalikan ke build debug saja).
 
+- **Migrasi 0015 (nama pengenal RT)** dijalankan dan diuji di SQL Editor (semua dibatalkan otomatis): nama terlarang ditolak; ganti pertama berhasil dengan 1 baris log; ganti kedua ditolak `USERNAME_COOLDOWN`; nama lama untuk orang luar `TAKEN` tetapi untuk RT pemilik `AVAILABLE`; insert nama lama ditolak; ganti huruf besar/kecil saja tanpa jeda; nama kembar beda huruf ditolak (`23505`); non-admin ditolak `NOT_ADMIN`. Hak eksekusi: `authenticated` ya, `anon` tidak.
+- Uji 0015 berjalan sebagai `postgres`, belum lewat PostgREST dari aplikasi; alur ganti nama dari HP belum diuji.
+
 ### Urutan menjalankan migrasi (SQL Editor, satu file satu kali Run)
-`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013` `0014_notification_log`
+`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013` `0014_notification_log` `0015_username_hold`
 > `0010` wajib dijalankan sendiri agar nilai enum `DISKUSI` ter-commit sebelum dipakai `0013`.
 
 ### Perbaikan yang dibuat dari temuan review

@@ -13,6 +13,7 @@ sealed class AppError(@StringRes val messageRes: Int) {
     object FieldInvalid : AppError(R.string.error_field_invalid)
     object UsernameInvalid : AppError(R.string.error_username_invalid)
     object UsernameTaken : AppError(R.string.error_username_taken)
+    object UsernameCooldown : AppError(R.string.error_username_cooldown)
     object RateLimitCreateRt : AppError(R.string.error_rate_limit_create_rt)
     object RateLimitPost : AppError(R.string.error_rate_limit_post)
     object RtNotFound : AppError(R.string.error_rt_not_found)
