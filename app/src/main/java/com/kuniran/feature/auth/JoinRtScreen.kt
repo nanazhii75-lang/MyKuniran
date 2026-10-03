@@ -147,7 +147,7 @@ fun JoinRtScreen(
 
                 OutlinedTextField(
                     value = inviteUsername,
-                    onValueChange = { inviteUsername = it.trim() },
+                    onValueChange = { inviteUsername = it.trim().removePrefix("@") },
                     label = { Text(stringResource(R.string.join_input_label)) },
                     placeholder = { Text(stringResource(R.string.join_input_placeholder)) },
                     singleLine = true,

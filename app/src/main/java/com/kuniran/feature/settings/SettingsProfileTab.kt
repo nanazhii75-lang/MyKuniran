@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuniran.R
+import com.kuniran.core.model.UserRole
 
 /** Tab Profil: data diri warga + tindakan akun (keluar RT / keluar aplikasi). */
 @Composable
@@ -44,6 +45,14 @@ internal fun SettingsProfileTab(
             phoneNumber = user.phoneNumber ?: ""
             houseInfo = user.houseInfo ?: ""
         }
+    }
+
+    val rtGroup = uiState.rtGroup
+    if (hasRt && rtGroup != null) {
+        SettingsInviteCard(
+            group = rtGroup,
+            isAdmin = uiState.currentUser?.role == UserRole.ADMIN_RT
+        )
     }
 
     Card(

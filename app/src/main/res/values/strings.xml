@@ -356,4 +356,14 @@
     <string name="settings_tab_menu">Menu</string>
     <string name="settings_tab_rt">Wilayah RT</string>
     <string name="settings_account_header">Akun</string>
+
+    <!-- Undang warga: nama pengenal RT terlihat oleh semua anggota -->
+    <string name="settings_invite_header">Undang Warga Baru</string>
+    <string name="settings_invite_desc">Warga baru memasukkan nama pengenal ini di menu Gabung RT. Pengurus yang menyetujui.</string>
+    <string name="settings_invite_label">Nama Pengenal RT</string>
+    <string name="settings_invite_copy">Salin</string>
+    <string name="settings_invite_share">Bagikan</string>
+    <string name="settings_invite_copied">Nama pengenal disalin</string>
+    <string name="settings_invite_admin_hint">Untuk mengganti, buka tab Wilayah RT.</string>
+    <string name="settings_invite_share_text">Gabung %1$s di aplikasi Kuniran. Buka aplikasi, pilih Gabung RT, lalu masukkan nama pengenal: %2$s</string>
 </resources>
