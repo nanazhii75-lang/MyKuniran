@@ -25,15 +25,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kuniran.R
-import com.kuniran.core.model.UserRole
 
-/** Tab Profil: data diri warga + tindakan akun (keluar RT / keluar aplikasi). */
+/** Bagian Profil Saya: data diri warga. */
 @Composable
 internal fun SettingsProfileTab(
     uiState: SettingsUiState,
-    hasRt: Boolean,
-    viewModel: SettingsViewModel,
-    onLoggedOut: () -> Unit
+    viewModel: SettingsViewModel
 ) {
     var fullName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
@@ -45,14 +42,6 @@ internal fun SettingsProfileTab(
             phoneNumber = user.phoneNumber ?: ""
             houseInfo = user.houseInfo ?: ""
         }
-    }
-
-    val rtGroup = uiState.rtGroup
-    if (hasRt && rtGroup != null) {
-        SettingsInviteCard(
-            group = rtGroup,
-            isAdmin = uiState.currentUser?.role == UserRole.ADMIN_RT
-        )
     }
 
     Card(
@@ -118,13 +107,15 @@ internal fun SettingsProfileTab(
         }
     }
 
-    Text(
-        text = stringResource(R.string.settings_account_header),
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary
-    )
+}
 
+/** Bagian Akun: keluar dari RT dan keluar dari aplikasi. */
+@Composable
+internal fun SettingsAccountSection(
+    hasRt: Boolean,
+    viewModel: SettingsViewModel,
+    onLoggedOut: () -> Unit
+) {
     if (hasRt) {
         OutlinedButton(
             onClick = { viewModel.leaveRt { onLoggedOut() } },

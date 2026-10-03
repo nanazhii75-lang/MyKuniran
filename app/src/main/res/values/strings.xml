@@ -357,6 +357,11 @@
     <string name="settings_tab_menu">Menu</string>
     <string name="settings_tab_rt">Wilayah RT</string>
     <string name="settings_account_header">Akun</string>
+    <string name="settings_home_profile">Profil Saya</string>
+    <string name="settings_home_rt">Identitas RT &amp; Undang Warga</string>
+    <string name="settings_home_account">Akun &amp; Keluar</string>
+    <string name="settings_home_features">Fitur</string>
+    <string name="settings_btn_back">Kembali</string>
 
     <!-- Undang warga: nama pengenal RT terlihat oleh semua anggota -->
     <string name="settings_invite_header">Undang Warga Baru</string>

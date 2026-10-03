@@ -83,7 +83,7 @@ internal fun SettingsMenuTab(
 }
 
 @Composable
-private fun SettingsMenuRow(
+internal fun SettingsMenuRow(
     icon: ImageVector,
     title: String,
     onClick: () -> Unit,
