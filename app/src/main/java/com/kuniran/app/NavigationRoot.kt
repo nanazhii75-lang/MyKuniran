@@ -456,7 +456,10 @@ fun MainTabsScaffold(
                         container.createFinanceAgendaUseCase,
                         container.createFinanceCategoryUseCase,
                         container.updateFinanceCategoryUseCase,
-                        container.financeRepository
+                        container.financeRepository,
+                        container.getRtMembersUseCase,
+                        container.syncMembersUseCase,
+                        container.assignBendaharaUseCase
                     )
                 }
                 FinanceScreen(viewModel = financeViewModel)

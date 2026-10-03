@@ -6,16 +6,19 @@ import com.kuniran.core.common.Resource
 import com.kuniran.core.model.FinanceCategory
 import com.kuniran.core.model.TransactionType
 import com.kuniran.domain.repository.FinanceRepository
+import com.kuniran.domain.usecase.AssignBendaharaUseCase
 import com.kuniran.domain.usecase.CreateFinanceAgendaUseCase
 import com.kuniran.domain.usecase.CreateFinanceCategoryUseCase
 import com.kuniran.domain.usecase.CreateTransactionUseCase
 import com.kuniran.domain.usecase.DeleteTransactionUseCase
 import com.kuniran.domain.usecase.GetCurrentUserUseCase
 import com.kuniran.domain.usecase.GetFinanceCategoriesUseCase
+import com.kuniran.domain.usecase.GetRtMembersUseCase
 import com.kuniran.domain.usecase.GetTransactionsUseCase
 import com.kuniran.domain.usecase.PublishFinanceReportUseCase
 import com.kuniran.domain.usecase.PublishMonthlyRecapUseCase
 import com.kuniran.domain.usecase.SyncFinancesUseCase
+import com.kuniran.domain.usecase.SyncMembersUseCase
 import com.kuniran.domain.usecase.UpdateFinanceCategoryUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,13 +38,21 @@ class FinanceViewModel(
     private val createFinanceAgendaUseCase: CreateFinanceAgendaUseCase,
     private val createFinanceCategoryUseCase: CreateFinanceCategoryUseCase,
     private val updateFinanceCategoryUseCase: UpdateFinanceCategoryUseCase,
-    private val financeRepository: FinanceRepository
+    private val financeRepository: FinanceRepository,
+    private val getRtMembersUseCase: GetRtMembersUseCase,
+    private val syncMembersUseCase: SyncMembersUseCase,
+    private val assignBendaharaUseCase: AssignBendaharaUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FinanceUiState())
     val uiState: StateFlow<FinanceUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            getRtMembersUseCase().collect { list ->
+                _uiState.update { it.copy(members = list.filter { m -> m.isMember }) }
+            }
+        }
         viewModelScope.launch {
             getCurrentUserUseCase().collect { user ->
                 _uiState.update { it.copy(currentUser = user) }
@@ -137,7 +148,10 @@ class FinanceViewModel(
         val target = rtId ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isRefreshing = true) }
-            when (val res = syncFinancesUseCase(target)) {
+            val res = syncFinancesUseCase(target)
+            // Daftar warga dipakai untuk memilih bendahara; kegagalannya tidak mengganggu layar keuangan
+            syncMembersUseCase()
+            when (res) {
                 is Resource.Error -> _uiState.update { it.copy(isRefreshing = false, error = res.error) }
                 else -> _uiState.update { it.copy(isRefreshing = false) }
             }
@@ -250,6 +264,24 @@ class FinanceViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             when (val res = updateFinanceCategoryUseCase(categoryId, name, description)) {
+                is Resource.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    financeRepository.syncCategories(rtId)
+                    onSuccess()
+                }
+                is Resource.Error -> {
+                    _uiState.update { it.copy(isLoading = false, error = res.error) }
+                }
+                is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    fun assignBendahara(categoryId: String, profileId: String?, onSuccess: () -> Unit) {
+        val rtId = _uiState.value.currentUser?.rtId ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            when (val res = assignBendaharaUseCase(categoryId, profileId)) {
                 is Resource.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
                     financeRepository.syncCategories(rtId)

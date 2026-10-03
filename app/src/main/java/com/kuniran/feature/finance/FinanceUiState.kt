@@ -3,6 +3,7 @@ package com.kuniran.feature.finance
 import com.kuniran.core.common.AppError
 import com.kuniran.core.model.FinanceCategory
 import com.kuniran.core.model.FinanceTransaction
+import com.kuniran.core.model.RtMember
 import com.kuniran.core.model.UserProfile
 
 data class FinanceUiState(
@@ -12,6 +13,7 @@ data class FinanceUiState(
     val selectedCategory: FinanceCategory? = null,
     val activeLedgerCategory: FinanceCategory? = null,
     val currentUser: UserProfile? = null,
+    val members: List<RtMember> = emptyList(),
     val totalIncome: Long = 0L,
     val totalExpense: Long = 0L,
     val balance: Long = 0L,
@@ -28,8 +30,18 @@ data class FinanceUiState(
         get() {
             val user = currentUser ?: return false
             val cat = activeLedgerCategory ?: selectedCategory ?: return false
-            return cat.bendaharaId == user.id || user.role == com.kuniran.core.model.UserRole.ADMIN_RT
+            // Hanya bendahara pos yang bersangkutan yang boleh menulis keuangan (selaras RLS finances_insert)
+            return cat.bendaharaId != null && cat.bendaharaId == user.id
         }
+
+    val isAdmin: Boolean
+        get() = currentUser?.role == com.kuniran.core.model.UserRole.ADMIN_RT
+
+    // Kelola struktur pos (ubah nama, tunjuk bendahara): Pengurus RT atau bendahara pos itu
+    fun canManagePos(category: FinanceCategory): Boolean {
+        val user = currentUser ?: return false
+        return user.role == com.kuniran.core.model.UserRole.ADMIN_RT || category.bendaharaId == user.id
+    }
 
     val canManageAnyPos: Boolean
         get() {

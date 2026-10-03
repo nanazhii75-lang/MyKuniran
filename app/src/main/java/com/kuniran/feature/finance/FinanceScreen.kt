@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Savings
@@ -88,6 +89,7 @@ fun FinanceScreen(
     var showCreateTxDialog by remember { mutableStateOf(false) }
     var showCreateCatDialog by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<FinanceCategory?>(null) }
+    var assigningCategory by remember { mutableStateOf<FinanceCategory?>(null) }
     var showRecapDialog by remember { mutableStateOf(false) }
     var selectedTx by remember { mutableStateOf<FinanceTransaction?>(null) }
     var overflowMenuExpanded by remember { mutableStateOf(false) }
@@ -171,7 +173,18 @@ fun FinanceScreen(
                         }
                     },
                     actions = {
-                        if (uiState.isBendaharaOfSelected) {
+                        if (uiState.isAdmin) {
+                            IconButton(
+                                onClick = { assigningCategory = activeCat },
+                                modifier = Modifier.testTag("btn_assign_bendahara")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PersonAdd,
+                                    contentDescription = stringResource(R.string.finance_btn_assign_bendahara)
+                                )
+                            }
+                        }
+                        if (uiState.canManagePos(activeCat)) {
                             IconButton(
                                 onClick = { editingCategory = activeCat },
                                 modifier = Modifier.testTag("btn_edit_active_pos")
@@ -295,6 +308,20 @@ fun FinanceScreen(
             )
         }
 
+        assigningCategory?.let { cat ->
+            BendaharaPickerDialog(
+                category = cat,
+                members = uiState.members,
+                onDismiss = { assigningCategory = null },
+                onAssign = { profileId ->
+                    assigningCategory = null
+                    viewModel.assignBendahara(cat.id, profileId) {
+                        viewModel.refreshFinances()
+                    }
+                }
+            )
+        }
+
         if (showRecapDialog && activeCat != null) {
             PublishRecapDialog(
                 categoryName = activeCat.name,
@@ -309,7 +336,7 @@ fun FinanceScreen(
         }
 
         selectedTx?.let { tx ->
-            val canManageTx = uiState.isBendaharaOfSelected || tx.createdBy == uiState.currentUser?.id
+            val canManageTx = uiState.isBendaharaOfSelected
             TransactionDetailDialog(
                 transaction = tx,
                 isBendahara = canManageTx,
@@ -485,8 +512,7 @@ private fun FinancePosOverview(
                 val posBalance = uiState.getCategoryBalance(cat.id)
                 val posIncome = uiState.getCategoryIncome(cat.id)
                 val posExpense = uiState.getCategoryExpense(cat.id)
-                val isUserBendaharaOfPos = cat.bendaharaId == uiState.currentUser?.id ||
-                        uiState.currentUser?.role == UserRole.ADMIN_RT
+                val isUserBendaharaOfPos = uiState.canManagePos(cat)
 
                 PosCategoryCard(
                     category = cat,

@@ -159,6 +159,10 @@
     <string name="finance_item_date">Tanggal</string>
     <string name="finance_item_nominal">Nominal</string>
     <string name="finance_item_note">Catatan</string>
+    <string name="finance_btn_assign_bendahara">Tunjuk Bendahara</string>
+    <string name="finance_dialog_assign_bendahara_title">Bendahara Pos %1$s</string>
+    <string name="finance_assign_bendahara_hint">Hanya bendahara pos yang dapat mencatat transaksi. Warga lain hanya dapat melihat.</string>
+    <string name="finance_btn_remove_bendahara">Lepas Bendahara</string>
     <string name="finance_only_bendahara_hint">Hanya Bendahara &amp; Pengurus RT</string>
 
     <!-- Settings / Pengaturan -->
@@ -199,13 +203,13 @@
     <string name="faq_admin_q1">Apa saja wewenang Ketua/Pengurus RT di myKuniran?</string>
     <string name="faq_admin_a1">Pengurus RT bertindak sebagai admin wilayah: berhak mengubah data identitas RT, menerima atau menolak permohonan warga, menunjuk Bendahara per pos kas, menyematkan kabar prioritas, dan mengalihkan kepengurusan.</string>
     <string name="faq_admin_q2">Bagaimana cara menunjuk Bendahara untuk Pos Kas?</string>
-    <string name="faq_admin_a2">Ketua RT dapat membuka menu Transparansi Kas RT, memilih Pos Kas (misal Kas Kematian atau Kas Sampah), lalu menentukan warga yang ditugaskan sebagai bendahara pencatat.</string>
+    <string name="faq_admin_a2">Ketua RT membuka menu Transparansi Kas RT, memilih Pos Kas (misal Kas Kematian atau Kas Sampah), lalu mengetuk ikon Tunjuk Bendahara di pojok kanan atas dan memilih warga yang bertugas. Setelah itu hanya bendahara tersebut yang dapat mencatat transaksi di pos itu.</string>
     <string name="faq_admin_q3">Bagaimana proses peralihan jabatan Ketua RT?</string>
     <string name="faq_admin_a3">Ketua RT dapat memilih nama calon penerus dari daftar warga, lalu memilih menu Jadikan Pengurus Utama. Wewenang kepengurusan akan berpindah secara aman dan tercatat di server.</string>
     <string name="faq_section_finance_title">Pengelolaan Kas &amp; Laporan Keuangan</string>
     <string name="faq_section_finance_desc">Transparansi pemasukan, pengeluaran, dan rekapitulasi.</string>
     <string name="faq_finance_q1">Siapa yang dapat mencatat pemasukan dan pengeluaran?</string>
-    <string name="faq_finance_a1">Pengurus RT dan warga yang ditunjuk sebagai Bendahara pos kas yang bersangkutan memiliki wewenang untuk mencatat transaksi masuk maupun keluar.</string>
+    <string name="faq_finance_a1">Hanya warga yang ditunjuk sebagai Bendahara pos kas yang bersangkutan yang dapat mencatat transaksi masuk maupun keluar. Pengurus RT dan warga lain dapat melihat seluruh catatan.</string>
     <string name="faq_finance_q2">Mengapa transaksi yang diterbitkan menjadi terkunci?</string>
     <string name="faq_finance_a2">Demi integritas dan transparansi warga, setiap transaksi kas yang telah diterbitkan ke Warta Kabar RT otomatis dikunci dari perubahan atau penghapusan sepihak.</string>
     <string name="faq_finance_q3">Bagaimana cara menerbitkan Rekap Bulanan?</string>
