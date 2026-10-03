@@ -15,6 +15,7 @@ import com.kuniran.domain.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.withContext
 
 class AuthRepositoryImpl(
@@ -24,10 +25,18 @@ class AuthRepositoryImpl(
     private val database: AppDatabase
 ) : AuthRepository {
 
-    override fun getCurrentUserFlow(): Flow<UserProfile?> {
-        val uid = sessionManager.getUserId() ?: ""
-        return profileDao.getProfileFlow(uid).map { it?.toDomain() }
-    }
+    // Mengikuti perubahan sesi: saat login/logout, profil yang diamati ikut berganti.
+    // Sebelumnya uid dibaca sekali ("" saat belum login) sehingga aliran tidak pernah
+    // melihat profil akun yang baru login.
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    override fun getCurrentUserFlow(): Flow<UserProfile?> =
+        sessionManager.currentUserId.flatMapLatest { uid ->
+            if (uid.isNullOrBlank()) {
+                kotlinx.coroutines.flow.flowOf(null)
+            } else {
+                profileDao.getProfileFlow(uid).map { it?.toDomain() }
+            }
+        }
 
     override suspend fun getCurrentUser(): UserProfile? = withContext(Dispatchers.IO) {
         val uid = sessionManager.getUserId() ?: return@withContext null
