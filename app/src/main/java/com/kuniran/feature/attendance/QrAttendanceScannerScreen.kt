@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Keyboard
+import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.AlertDialog
@@ -155,6 +156,17 @@ fun QrAttendanceScannerScreen(
                     }
                 },
                 actions = {
+                    if (uiState.isAdmin) {
+                        IconButton(
+                            onClick = { viewModel.setShowGeneratorDialog(true) },
+                            modifier = Modifier.testTag("btn_open_qr_generator")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.QrCode,
+                                contentDescription = stringResource(R.string.qr_generator_title)
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { viewModel.setShowManualDialog(true) },
                         modifier = Modifier.testTag("btn_manual_attendance")
@@ -448,6 +460,15 @@ fun QrAttendanceScannerScreen(
                 }
             }
         }
+    }
+
+    // QR Generator Dialog (khusus pengurus RT)
+    val generatorRtId = uiState.rtId
+    if (uiState.showGeneratorDialog && uiState.isAdmin && generatorRtId != null) {
+        AttendanceQrGeneratorDialog(
+            rtId = generatorRtId,
+            onDismiss = { viewModel.setShowGeneratorDialog(false) }
+        )
     }
 
     // Manual Attendance Dialog

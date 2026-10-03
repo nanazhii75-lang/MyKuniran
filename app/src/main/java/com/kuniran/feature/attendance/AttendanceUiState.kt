@@ -9,5 +9,8 @@ data class AttendanceUiState(
     val lastScannedEvent: String? = null,
     val successMessage: String? = null,
     val error: AppError? = null,
-    val showManualDialog: Boolean = false
+    val showManualDialog: Boolean = false,
+    val isAdmin: Boolean = false,
+    val rtId: String? = null,
+    val showGeneratorDialog: Boolean = false
 )

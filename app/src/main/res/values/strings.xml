@@ -176,7 +176,7 @@
     <string name="settings_btn_change_username">Ganti Nama Pengenal (@username)</string>
     <string name="settings_btn_transfer_admin">Alihkan Jabatan Pengurus</string>
     <string name="settings_btn_help_faq">Pusat Bantuan &amp; FAQ</string>
-    <string name="settings_btn_resident_directory">Direktori Warga (Data Supabase)</string>
+    <string name="settings_btn_resident_directory">Direktori Warga</string>
     <string name="settings_btn_finance_dashboard">Dashboard Analitik Kas RT</string>
     <string name="settings_btn_leave_rt">Keluar dari RT Ini</string>
     <string name="settings_btn_signout">Keluar Aplikasi</string>
@@ -270,7 +270,7 @@
     <string name="forum_category_general">Diskusi Umum</string>
     <string name="forum_btn_post">Kirim Topik</string>
     <string name="forum_post_success">Topik berhasil dikirim ke forum warga.</string>
-    <string name="settings_btn_qr_scanner">Pindai Presensi Kegiatan (QR Code)</string>
+    <string name="settings_btn_qr_scanner">Presensi Kegiatan (Scan QR)</string>
     <string name="settings_btn_forum">Forum Diskusi &amp; Aspirasi Warga</string>
     <string name="settings_btn_calendar_rsvp">Kalender Kegiatan &amp; RSVP Warga</string>
 
@@ -342,4 +342,18 @@
     <string name="error_duplicate_name">Nama pos keuangan sudah dipakai di RT ini.</string>
     <string name="error_invalid_name">Nama pos keuangan harus 2 sampai 60 karakter.</string>
     <string name="error_already_attended">Anda sudah tercatat hadir di kegiatan ini hari ini.</string>
+
+    <!-- QR presensi: pembuat kode untuk pengurus RT -->
+    <string name="qr_generator_title">Buat QR Presensi</string>
+    <string name="qr_generator_desc">Isi nama kegiatan, lalu tampilkan QR di layar agar warga RT ini dapat memindainya.</string>
+    <string name="qr_generator_btn_create">Buat QR</string>
+    <string name="qr_generator_btn_close">Tutup</string>
+    <string name="qr_generator_show_hint">Warga memindai dari menu Presensi Kegiatan. QR ini hanya berlaku untuk RT ini.</string>
+    <string name="error_qr_wrong_rt">Kode QR ini milik RT lain dan tidak dapat dipakai untuk presensi.</string>
+
+    <!-- Pengaturan: tab -->
+    <string name="settings_tab_profile">Profil</string>
+    <string name="settings_tab_menu">Menu</string>
+    <string name="settings_tab_rt">Wilayah RT</string>
+    <string name="settings_account_header">Akun</string>
 </resources>

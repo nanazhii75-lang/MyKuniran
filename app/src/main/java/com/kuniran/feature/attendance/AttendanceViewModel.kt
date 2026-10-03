@@ -2,7 +2,9 @@ package com.kuniran.feature.attendance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.Resource
+import com.kuniran.core.model.UserRole
 import com.kuniran.domain.usecase.GetCurrentUserUseCase
 import com.kuniran.domain.usecase.GetAttendanceHistoryUseCase
 import com.kuniran.domain.usecase.LogAttendanceUseCase
@@ -36,6 +38,9 @@ class AttendanceViewModel(
                     currentRtId = user.rtId
                     currentUserId = user.id
                     currentUserName = user.fullName
+                    _uiState.update {
+                        it.copy(isAdmin = user.role == UserRole.ADMIN_RT, rtId = user.rtId)
+                    }
                     loadHistory(user.id)
                 }
             }
@@ -59,8 +64,19 @@ class AttendanceViewModel(
         val raw = qrContent.trim()
         if (raw.isBlank() || _uiState.value.lastScannedEvent == raw) return
 
-        // Parse event title & location if formatted as JSON or "title|location"
-        val (eventTitle, eventLocation) = parseQrPayload(raw)
+        // QR Kuniran membawa ID RT: tolak jika milik RT lain (isolasi antar-RT).
+        val payload = AttendanceQrPayload.decode(raw)
+        if (payload != null && payload.rtId != rtId) {
+            _uiState.update { it.copy(lastScannedEvent = raw, error = AppError.QrWrongRt) }
+            return
+        }
+
+        // QR lama/biasa: parse judul & lokasi dari JSON atau "judul|lokasi"
+        val (eventTitle, eventLocation) = if (payload != null) {
+            Pair(payload.title, payload.location)
+        } else {
+            parseQrPayload(raw)
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, lastScannedEvent = raw) }
@@ -120,6 +136,10 @@ class AttendanceViewModel(
 
     fun setShowManualDialog(show: Boolean) {
         _uiState.update { it.copy(showManualDialog = show) }
+    }
+
+    fun setShowGeneratorDialog(show: Boolean) {
+        _uiState.update { it.copy(showGeneratorDialog = show) }
     }
 
     fun dismissSuccessMessage() {
