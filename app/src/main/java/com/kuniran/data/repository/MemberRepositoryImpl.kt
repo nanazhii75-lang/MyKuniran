@@ -29,7 +29,7 @@ class MemberRepositoryImpl(
         try {
             val list = apiService.rtPeople()
             val entities = list.map { MemberEntity.fromDomain(it.toDomain()) }
-            memberDao.insertMembers(entities)
+            memberDao.replaceMembers(entities)
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(ExceptionMapper.map(e))

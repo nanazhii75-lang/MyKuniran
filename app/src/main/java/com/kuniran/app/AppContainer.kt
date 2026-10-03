@@ -41,11 +41,11 @@ class AppContainer(context: Context) {
 
     // Repositories
     val authRepository: AuthRepository by lazy {
-        AuthRepositoryImpl(apiService, database.profileDao(), sessionManager)
+        AuthRepositoryImpl(apiService, database.profileDao(), sessionManager, database)
     }
 
     val rtRepository: RtRepository by lazy {
-        RtRepositoryImpl(apiService, database.rtGroupDao(), database.profileDao(), sessionManager)
+        RtRepositoryImpl(apiService, database.rtGroupDao(), database.profileDao(), sessionManager, database)
     }
 
     val postRepository: PostRepository by lazy {

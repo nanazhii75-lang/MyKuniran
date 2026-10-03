@@ -3,6 +3,7 @@ package com.kuniran.data.repository
 import com.kuniran.core.common.AppError
 import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.Resource
+import com.kuniran.core.database.AppDatabase
 import com.kuniran.core.database.ProfileDao
 import com.kuniran.core.database.RtGroupDao
 import com.kuniran.core.database.RtGroupEntity
@@ -31,7 +32,8 @@ class RtRepositoryImpl(
     private val apiService: SupabaseApiService,
     private val rtGroupDao: RtGroupDao,
     private val profileDao: ProfileDao,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val database: AppDatabase
 ) : RtRepository {
 
     override fun getRtGroupFlow(rtId: String): Flow<RtGroup?> {
@@ -239,11 +241,11 @@ class RtRepositoryImpl(
             apiService.leaveRt()
             sessionManager.updateRtId(null, UserRole.WARGA.name)
             val uid = sessionManager.getUserId()
-            if (uid != null) {
-                val p = profileDao.getProfile(uid)
-                if (p != null) {
-                    profileDao.insertProfile(p.copy(rtId = null, role = UserRole.WARGA))
-                }
+            val p = uid?.let { profileDao.getProfile(it) }
+            // Isolasi RT: data RT lama (warga, kabar, kas) dibuang dari perangkat.
+            database.clearAllTables()
+            if (p != null) {
+                profileDao.insertProfile(p.copy(rtId = null, role = UserRole.WARGA))
             }
             Resource.Success(Unit)
         } catch (e: Exception) {

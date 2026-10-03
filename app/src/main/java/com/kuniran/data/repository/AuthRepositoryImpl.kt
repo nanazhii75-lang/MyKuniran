@@ -3,6 +3,7 @@ package com.kuniran.data.repository
 import com.kuniran.core.common.AppError
 import com.kuniran.core.common.ExceptionMapper
 import com.kuniran.core.common.Resource
+import com.kuniran.core.database.AppDatabase
 import com.kuniran.core.database.ProfileDao
 import com.kuniran.core.database.ProfileEntity
 import com.kuniran.core.model.UserProfile
@@ -19,7 +20,8 @@ import kotlinx.coroutines.withContext
 class AuthRepositoryImpl(
     private val apiService: SupabaseApiService,
     private val profileDao: ProfileDao,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val database: AppDatabase
 ) : AuthRepository {
 
     override fun getCurrentUserFlow(): Flow<UserProfile?> {
@@ -53,6 +55,9 @@ class AuthRepositoryImpl(
                 ?: return@withContext Resource.Error(AppError.LoginFailed("Respons server kosong"))
             val userId = authData.user?.id
                 ?: return@withContext Resource.Error(AppError.LoginFailed("Respons server tanpa data pengguna"))
+
+            // Isolasi RT: cache lokal milik akun/RT sebelumnya tidak boleh terbawa ke akun ini.
+            database.clearAllTables()
 
             // Sesi hanya disimpan dari token asli milik server. Tidak ada token cadangan.
             sessionManager.saveSession(
@@ -94,6 +99,7 @@ class AuthRepositoryImpl(
 
     override suspend fun signOut(): Resource<Unit> = withContext(Dispatchers.IO) {
         sessionManager.clearSession()
+        database.clearAllTables()
         Resource.Success(Unit)
     }
 
