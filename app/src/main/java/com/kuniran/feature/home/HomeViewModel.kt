@@ -44,6 +44,9 @@ class HomeViewModel(
                     observeFeed(user.rtId)
                     refreshFeed(user.rtId)
                     fetchRtInfo(user.rtId)
+                    // Ambil data RT dari server supaya judul RT terisi di instalasi baru
+                    // (gagal jaringan tidak masalah: cache lokal tetap dipakai)
+                    viewModelScope.launch { rtRepository.fetchRtGroup(user.rtId) }
                 }
             }
         }
