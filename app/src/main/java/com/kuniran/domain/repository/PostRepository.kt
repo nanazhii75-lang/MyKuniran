@@ -17,7 +17,8 @@ interface PostRepository {
         content: String,
         type: PostType,
         eventDate: String? = null,
-        eventLocation: String? = null
+        eventLocation: String? = null,
+        imageBytes: ByteArray? = null
     ): Resource<Unit>
     suspend fun pinPost(postId: String): Resource<Unit>
     suspend fun unpinPost(postId: String): Resource<Unit>

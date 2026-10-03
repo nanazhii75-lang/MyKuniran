@@ -102,6 +102,7 @@ fun PostDto.toDomain(): Post {
         categoryRefId = categoryRefId,
         recapMonth = recapMonth,
         meta = domainMeta,
+        imagePath = imagePath,
         isPinned = isPinned ?: false,
         pinnedUntil = pinnedUntil,
         deletedAt = deletedAt,

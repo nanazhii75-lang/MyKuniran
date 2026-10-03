@@ -48,6 +48,7 @@ sealed class AppError(@StringRes val messageRes: Int) {
     object AlreadyAttended : AppError(R.string.error_already_attended)
     object QrWrongRt : AppError(R.string.error_qr_wrong_rt)
     object Network : AppError(R.string.error_network)
+    object ImageInvalid : AppError(R.string.error_image_invalid)
     data class LoginFailed(val detail: String? = null) : AppError(R.string.error_login_failed)
     data class Unknown(val technicalMessage: String? = null) : AppError(R.string.error_unknown)
 }

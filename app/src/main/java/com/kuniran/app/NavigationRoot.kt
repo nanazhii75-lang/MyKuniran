@@ -417,10 +417,11 @@ fun MainTabsScaffold(
                         container.deletePostUseCase,
                         container.rtRepository,
                         container.getRtMembersUseCase,
-                        container.syncMembersUseCase
+                        container.syncMembersUseCase,
+                        container.postImageProcessor
                     )
                 }
-                HomeScreen(viewModel = homeViewModel)
+                HomeScreen(viewModel = homeViewModel, imageLoader = container.imageLoader)
             }
 
             composable(BottomNavTab.Members.route) {

@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.UUID
 
 class PostRepositoryImpl(
@@ -54,9 +56,11 @@ class PostRepositoryImpl(
         content: String,
         type: PostType,
         eventDate: String?,
-        eventLocation: String?
+        eventLocation: String?,
+        imageBytes: ByteArray?
     ): Resource<Unit> = withContext(Dispatchers.IO) {
         val newId = UUID.randomUUID().toString()
+        val imagePath = if (imageBytes != null) "$rtId/$newId.jpg" else null
         val now = DateTimeUtils.currentIsoTimestamp()
 
         val post = Post(
@@ -76,11 +80,23 @@ class PostRepositoryImpl(
             pinnedUntil = null,
             deletedAt = null,
             createdAt = now,
-            updatedAt = now
+            updatedAt = now,
+            imagePath = imagePath
         )
 
         // Server dulu: data lokal baru disimpan setelah server menerima (tanpa postingan hantu)
+        var serverAccepted = false
         try {
+            // Foto diunggah lebih dulu; kalau gagal, postingan tidak dibuat
+            if (imageBytes != null) {
+                val up = apiService.uploadPostImage(
+                    rtId, "$newId.jpg", imageBytes.toRequestBody("image/jpeg".toMediaType())
+                )
+                if (!up.isSuccessful) {
+                    val upErr = runCatching { up.errorBody()?.string() }.getOrNull()
+                    return@withContext Resource.Error(ExceptionMapper.mapResponse(up.code(), upErr))
+                }
+            }
             val body = mutableMapOf<String, Any?>(
                 "id" to newId,
                 "rt_id" to rtId,
@@ -89,7 +105,8 @@ class PostRepositoryImpl(
                 "content" to content,
                 "type" to type.name,
                 "event_date" to eventDate,
-                "event_location" to eventLocation
+                "event_location" to eventLocation,
+                "image_path" to imagePath
             )
             val response = apiService.createPost(body)
             val errBody = if (response.isSuccessful) null
@@ -97,8 +114,10 @@ class PostRepositoryImpl(
             // 409 + 23505 pada id yang kita kirim sendiri = percobaan ulang yang sudah sampai (idempoten)
             val duplicate = response.code() == 409 && errBody?.contains("23505") == true
             if (!response.isSuccessful && !duplicate) {
+                if (imageBytes != null) discardUploadedImage(rtId, newId)
                 return@withContext Resource.Error(ExceptionMapper.mapResponse(response.code(), errBody))
             }
+            serverAccepted = true
             postDao.insertPost(PostEntity.fromDomain(post))
 
             // Push hanya untuk pengumuman dan agenda; obrolan (DISKUSI) tidak memicu notifikasi.
@@ -112,8 +131,15 @@ class PostRepositoryImpl(
 
             Resource.Success(Unit)
         } catch (e: Exception) {
+            // Foto yatim dibersihkan hanya bila server belum menerima postingannya
+            if (imageBytes != null && !serverAccepted) discardUploadedImage(rtId, newId)
             Resource.Error(ExceptionMapper.map(e))
         }
+    }
+
+    /** Hapus foto yang sudah terunggah tetapi postingannya gagal tersimpan (best effort). */
+    private suspend fun discardUploadedImage(rtId: String, postId: String) {
+        runCatching { apiService.deletePostImage(rtId, "$postId.jpg") }
     }
 
     override suspend fun pinPost(postId: String): Resource<Unit> = withContext(Dispatchers.IO) {
@@ -138,8 +164,16 @@ class PostRepositoryImpl(
 
     override suspend fun deletePost(postId: String): Resource<Unit> = withContext(Dispatchers.IO) {
         try {
+            val imagePath = postDao.getImagePath(postId)
             apiService.deletePost(DeletePostRequest(postId))
             postDao.softDeletePost(postId, DateTimeUtils.currentIsoTimestamp())
+            // Server mengizinkan hapus file hanya setelah postingannya terhapus, jadi urutannya begini
+            if (imagePath != null) {
+                val file = imagePath.substringAfter('/', "")
+                if (file.isNotEmpty()) {
+                    runCatching { apiService.deletePostImage(imagePath.substringBefore('/'), file) }
+                }
+            }
             Resource.Success(Unit)
         } catch (e: Exception) {
             Resource.Error(ExceptionMapper.map(e))

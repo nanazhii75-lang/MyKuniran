@@ -1,5 +1,9 @@
 package com.kuniran.feature.home
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
@@ -46,6 +51,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import coil.ImageLoader
 import com.kuniran.R
 import com.kuniran.core.common.asText
 import com.kuniran.core.ui.components.KuniranTopAppBar
@@ -57,6 +63,7 @@ private const val FEED_POLL_INTERVAL_MS = 30_000L
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    imageLoader: ImageLoader,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -65,6 +72,12 @@ fun HomeScreen(
 
     var draft by rememberSaveable { mutableStateOf("") }
     var asAnnouncement by rememberSaveable { mutableStateOf(false) }
+    var pickedImage by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    // Pemilih foto bawaan Android: tidak butuh izin tambahan
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) pickedImage = uri
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { err ->
@@ -132,10 +145,17 @@ fun HomeScreen(
                     asAnnouncement = asAnnouncement,
                     onToggleAnnouncement = { asAnnouncement = !asAnnouncement },
                     isSending = uiState.isLoading,
+                    pickedImage = pickedImage,
+                    imageLoader = imageLoader,
+                    onPickImage = {
+                        pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                    onRemoveImage = { pickedImage = null },
                     onSend = {
-                        viewModel.sendPost(draft, asAnnouncement) {
+                        viewModel.sendPost(draft, asAnnouncement, pickedImage) {
                             draft = ""
                             asAnnouncement = false
+                            pickedImage = null
                         }
                     }
                 )
@@ -158,6 +178,7 @@ fun HomeScreen(
                         post = post,
                         authorName = uiState.authorNames[post.authorId]
                             ?: post.authorName.ifBlank { fallbackAuthor },
+                        imageLoader = imageLoader,
                         currentUserId = uiState.currentUser?.id,
                         currentUserRole = uiState.currentUser?.role,
                         onPinClick = { viewModel.pinPost(post.id) },
@@ -177,6 +198,10 @@ private fun PostComposer(
     asAnnouncement: Boolean,
     onToggleAnnouncement: () -> Unit,
     isSending: Boolean,
+    pickedImage: Uri?,
+    imageLoader: ImageLoader,
+    onPickImage: () -> Unit,
+    onRemoveImage: () -> Unit,
     onSend: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -211,11 +236,23 @@ private fun PostComposer(
                     .testTag("input_home_post")
             )
 
+            if (pickedImage != null) {
+                ComposerImagePreview(
+                    uri = pickedImage,
+                    imageLoader = imageLoader,
+                    onRemove = onRemoveImage
+                )
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                 FilterChip(
                     selected = asAnnouncement,
                     onClick = onToggleAnnouncement,
@@ -235,9 +272,22 @@ private fun PostComposer(
                     modifier = Modifier.testTag("chip_post_announcement")
                 )
 
+                IconButton(
+                    onClick = onPickImage,
+                    enabled = !isSending,
+                    modifier = Modifier.testTag("btn_pick_photo")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddPhotoAlternate,
+                        contentDescription = stringResource(R.string.home_btn_add_photo),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                }
+
                 FilledIconButton(
                     onClick = onSend,
-                    enabled = draft.isNotBlank() && !isSending,
+                    enabled = (draft.isNotBlank() || pickedImage != null) && !isSending,
                     modifier = Modifier.testTag("btn_send_post")
                 ) {
                     if (isSending) {

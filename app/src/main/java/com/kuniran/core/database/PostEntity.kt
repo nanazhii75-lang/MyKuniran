@@ -36,7 +36,8 @@ data class PostEntity(
     val pinnedUntil: String?,
     val deletedAt: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val imagePath: String? = null
 ) {
     fun toDomain(): Post {
         val meta = if (metaKind != null) {
@@ -73,7 +74,8 @@ data class PostEntity(
             pinnedUntil = pinnedUntil,
             deletedAt = deletedAt,
             createdAt = createdAt,
-            updatedAt = updatedAt
+            updatedAt = updatedAt,
+            imagePath = imagePath
         )
     }
 
@@ -106,7 +108,8 @@ data class PostEntity(
             pinnedUntil = p.pinnedUntil,
             deletedAt = p.deletedAt,
             createdAt = p.createdAt,
-            updatedAt = p.updatedAt
+            updatedAt = p.updatedAt,
+            imagePath = p.imagePath
         )
     }
 }

@@ -63,6 +63,11 @@
     <string name="home_composer_announcement">Pengumuman</string>
     <string name="home_composer_announcement_note">Pengumuman dikirim sebagai notifikasi ke semua warga RT.</string>
     <string name="home_btn_send">Kirim</string>
+    <string name="home_btn_add_photo">Tambah foto</string>
+    <string name="home_photo_remove">Buang foto</string>
+    <string name="home_photo_error">Foto tidak dapat dimuat</string>
+    <string name="home_photo_close">Tutup foto</string>
+    <string name="error_image_invalid">Foto tidak bisa diproses. Coba pilih foto lain.</string>
     <string name="home_author_fallback">Warga RT</string>
     <string name="home_empty_chat">Belum ada obrolan. Ayo sapa warga lain.</string>
     <string name="post_pinned_badge">Disematkan</string>

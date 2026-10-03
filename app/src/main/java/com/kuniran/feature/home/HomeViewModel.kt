@@ -1,8 +1,11 @@
 package com.kuniran.feature.home
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kuniran.core.common.AppError
 import com.kuniran.core.common.Resource
+import com.kuniran.core.image.PostImageProcessor
 import com.kuniran.core.model.PostType
 import com.kuniran.domain.repository.RtRepository
 import com.kuniran.domain.usecase.CreatePostUseCase
@@ -30,7 +33,8 @@ class HomeViewModel(
     private val deletePostUseCase: DeletePostUseCase,
     private val rtRepository: RtRepository,
     private val getRtMembersUseCase: GetRtMembersUseCase,
-    private val syncMembersUseCase: SyncMembersUseCase
+    private val syncMembersUseCase: SyncMembersUseCase,
+    private val imageProcessor: PostImageProcessor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -103,22 +107,35 @@ class HomeViewModel(
      * Kirim tulisan dari kolom tulis di home. Judul dibentuk dari baris pertama
      * (database mewajibkan judul), isi menyimpan seluruh teks.
      */
-    fun sendPost(text: String, asAnnouncement: Boolean, onSuccess: () -> Unit) {
+    fun sendPost(text: String, asAnnouncement: Boolean, imageUri: Uri?, onSuccess: () -> Unit) {
         if (_uiState.value.isLoading) return
         val content = text.trim().takeSafe(CONTENT_MAX)
-        if (content.isEmpty()) return
-        val title = titleFromContent(content)
-        createPost(
-            title = title,
-            content = content,
-            type = if (asAnnouncement) PostType.PENGUMUMAN else PostType.DISKUSI,
-            eventDate = null,
-            eventLocation = null,
-            onSuccess = {
-                onSuccess()
-                refreshFeed()
+        if (content.isEmpty() && imageUri == null) return
+        // Pos berisi foto saja tetap butuh judul (wajib di database)
+        val title = if (content.isEmpty()) PHOTO_TITLE else titleFromContent(content)
+        viewModelScope.launch {
+            var imageBytes: ByteArray? = null
+            if (imageUri != null) {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+                imageBytes = imageProcessor.toJpeg(imageUri)
+                if (imageBytes == null) {
+                    _uiState.update { it.copy(isLoading = false, error = AppError.ImageInvalid) }
+                    return@launch
+                }
             }
-        )
+            createPost(
+                title = title,
+                content = content,
+                type = if (asAnnouncement) PostType.PENGUMUMAN else PostType.DISKUSI,
+                eventDate = null,
+                eventLocation = null,
+                imageBytes = imageBytes,
+                onSuccess = {
+                    onSuccess()
+                    refreshFeed()
+                }
+            )
+        }
     }
 
     fun createPost(
@@ -127,6 +144,7 @@ class HomeViewModel(
         type: PostType,
         eventDate: String?,
         eventLocation: String?,
+        imageBytes: ByteArray? = null,
         onSuccess: () -> Unit
     ) {
         val user = _uiState.value.currentUser ?: return
@@ -140,7 +158,8 @@ class HomeViewModel(
                 content = content,
                 type = type,
                 eventDate = eventDate,
-                eventLocation = eventLocation
+                eventLocation = eventLocation,
+                imageBytes = imageBytes
             )) {
                 is Resource.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
@@ -187,5 +206,6 @@ class HomeViewModel(
 
     private companion object {
         const val CONTENT_MAX = 5000  // batas database 5000
+        const val PHOTO_TITLE = "Foto"
     }
 }

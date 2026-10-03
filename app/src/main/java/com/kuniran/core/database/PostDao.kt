@@ -23,6 +23,9 @@ interface PostDao {
     @Query("UPDATE posts SET deletedAt = :deletedAt WHERE id = :postId")
     suspend fun softDeletePost(postId: String, deletedAt: String)
 
+    @Query("SELECT imagePath FROM posts WHERE id = :postId")
+    suspend fun getImagePath(postId: String): String?
+
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePost(postId: String)
 

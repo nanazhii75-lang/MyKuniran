@@ -29,7 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
 import com.kuniran.R
+import com.kuniran.core.image.PostImageLoader
 import com.kuniran.core.common.CurrencyFormatter
 import com.kuniran.core.common.DateTimeUtils
 import com.kuniran.core.model.Post
@@ -42,6 +44,7 @@ import com.kuniran.core.ui.components.KuniranBadge
 fun PostItemCard(
     post: Post,
     authorName: String,
+    imageLoader: ImageLoader,
     currentUserId: String?,
     currentUserRole: UserRole?,
     onPinClick: () -> Unit,
@@ -169,6 +172,14 @@ fun PostItemCard(
                     text = post.content,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            post.imagePath?.let { path ->
+                Spacer(modifier = Modifier.height(10.dp))
+                PostImageView(
+                    imageUrl = PostImageLoader.url(path),
+                    imageLoader = imageLoader
                 )
             }
 

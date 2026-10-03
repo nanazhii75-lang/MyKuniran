@@ -18,5 +18,8 @@ internal fun titleFromContent(content: String): String =
  * tidak ditampilkan dua kali. Pos lain (pengumuman lama, laporan kas, agenda) tetap
  * menampilkan judul terpisah.
  */
-internal fun Post.showsSeparateTitle(): Boolean =
-    title.isNotBlank() && title != titleFromContent(content)
+internal fun Post.showsSeparateTitle(): Boolean {
+    // Pos berisi foto saja memakai judul bawaan Foto yang tidak perlu ditampilkan
+    if (content.isBlank() && imagePath != null) return false
+    return title.isNotBlank() && title != titleFromContent(content)
+}

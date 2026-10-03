@@ -19,5 +19,6 @@ data class Post(
     val pinnedUntil: String?,
     val deletedAt: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val imagePath: String? = null
 )

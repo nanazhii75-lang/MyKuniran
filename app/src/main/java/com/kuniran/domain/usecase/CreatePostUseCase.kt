@@ -14,7 +14,8 @@ class CreatePostUseCase(
         content: String,
         type: PostType,
         eventDate: String? = null,
-        eventLocation: String? = null
+        eventLocation: String? = null,
+        imageBytes: ByteArray? = null
     ): Resource<Unit> {
         return postRepository.createPost(
             rtId = rtId,
@@ -23,7 +24,8 @@ class CreatePostUseCase(
             content = content,
             type = type,
             eventDate = eventDate,
-            eventLocation = eventLocation
+            eventLocation = eventLocation,
+            imageBytes = imageBytes
         )
     }
 }

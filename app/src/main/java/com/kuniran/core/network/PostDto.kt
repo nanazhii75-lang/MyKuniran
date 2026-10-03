@@ -35,5 +35,6 @@ data class PostDto(
     @Json(name = "pinned_until") val pinnedUntil: String? = null,
     @Json(name = "deleted_at") val deletedAt: String? = null,
     @Json(name = "created_at") val createdAt: String? = null,
-    @Json(name = "updated_at") val updatedAt: String? = null
+    @Json(name = "updated_at") val updatedAt: String? = null,
+    @Json(name = "image_path") val imagePath: String? = null
 )

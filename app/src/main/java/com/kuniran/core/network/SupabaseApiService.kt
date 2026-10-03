@@ -7,6 +7,8 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
+import okhttp3.RequestBody
 import retrofit2.http.Query
 
 // Retrofit menolak tipe wildcard pada parameter; Map<String, Any?> Kotlin menjadi Map<String, ?> di JVM
@@ -55,6 +57,20 @@ interface SupabaseApiService {
     @POST("rest/v1/posts")
     suspend fun createPost(
         @Body body: Map<String, Any?>
+    ): Response<Unit>
+
+    // Storage: foto postingan (bucket privat post-images, jalur <rt_id>/<post_id>.jpg)
+    @POST("storage/v1/object/post-images/{rtId}/{fileName}")
+    suspend fun uploadPostImage(
+        @Path("rtId") rtId: String,
+        @Path("fileName") fileName: String,
+        @Body body: RequestBody
+    ): Response<Unit>
+
+    @DELETE("storage/v1/object/post-images/{rtId}/{fileName}")
+    suspend fun deletePostImage(
+        @Path("rtId") rtId: String,
+        @Path("fileName") fileName: String
     ): Response<Unit>
 
     // Finance Categories

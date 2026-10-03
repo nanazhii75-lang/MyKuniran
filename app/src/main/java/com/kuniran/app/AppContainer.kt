@@ -1,6 +1,9 @@
 package com.kuniran.app
 
 import android.content.Context
+import coil.ImageLoader
+import com.kuniran.core.image.PostImageLoader
+import com.kuniran.core.image.PostImageProcessor
 import com.kuniran.core.database.AppDatabase
 import com.kuniran.core.network.SessionManager
 import com.kuniran.core.network.SupabaseApiService
@@ -38,6 +41,9 @@ class AppContainer(context: Context) {
 
     val apiService: SupabaseApiService
         get() = supabaseClient.apiService
+
+    val postImageProcessor: PostImageProcessor by lazy { PostImageProcessor(context.contentResolver) }
+    val imageLoader: ImageLoader by lazy { PostImageLoader.create(context, sessionManager) }
 
     // Repositories
     val authRepository: AuthRepository by lazy {
