@@ -205,6 +205,11 @@ interface SupabaseApiService {
         @Body request: RegisterDeviceTokenRequest
     ): Response<Unit>
 
+    @POST("rest/v1/rpc/unregister_device_token")
+    suspend fun unregisterDeviceToken(
+        @Body request: RegisterDeviceTokenRequest
+    ): Response<Unit>
+
     @POST("rest/v1/rpc/rt_people")
     suspend fun rtPeople(): List<RtMemberDto>
 

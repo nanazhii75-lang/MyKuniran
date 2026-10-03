@@ -109,6 +109,17 @@ class AuthRepositoryImpl(
     }
 
     override suspend fun signOut(): Resource<Unit> = withContext(Dispatchers.IO) {
+        // Isolasi notifikasi: token perangkat dilepas dari akun ini selagi sesinya masih berlaku.
+        // Bila gagal (misalnya offline), token akan dipindah otomatis saat akun berikutnya login.
+        sessionManager.getDeviceToken()?.let { token ->
+            runCatching {
+                kotlinx.coroutines.withTimeoutOrNull(5_000) {
+                    apiService.unregisterDeviceToken(
+                        com.kuniran.core.network.RegisterDeviceTokenRequest(token = token)
+                    )
+                }
+            }
+        }
         sessionManager.clearSession()
         database.clearAllTables()
         Resource.Success(Unit)

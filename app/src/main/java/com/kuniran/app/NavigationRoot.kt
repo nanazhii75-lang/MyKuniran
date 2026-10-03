@@ -18,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -52,6 +53,8 @@ import com.kuniran.feature.home.HomeViewModel
 import com.kuniran.feature.members.MembersScreen
 import com.kuniran.feature.members.MembersViewModel
 import com.kuniran.feature.members.ResidentDirectoryScreen
+import com.kuniran.core.fcm.FcmManager
+import androidx.compose.ui.platform.LocalContext
 import com.kuniran.feature.profile.CompleteProfileScreen
 import com.kuniran.feature.profile.CompleteProfileViewModel
 import com.kuniran.feature.members.ResidentDirectoryViewModel
@@ -91,6 +94,17 @@ fun NavigationRoot(
     modifier: Modifier = Modifier
 ) {
     val rootNavController = rememberNavController()
+    val appContext = LocalContext.current.applicationContext
+    val sessionUserId by container.sessionManager.currentUserId.collectAsState()
+
+    // Token notifikasi dipasangkan ke akun yang sedang login. Tanpa ini token baru terdaftar
+    // saat aplikasi dibuka ulang, sehingga setelah ganti akun notifikasi bisa masuk ke akun lama.
+    LaunchedEffect(sessionUserId) {
+        if (!sessionUserId.isNullOrBlank()) {
+            FcmManager.registerCurrentToken(appContext)
+        }
+    }
+
     val startDestination = if (container.sessionManager.isLoggedIn()) {
         if (!container.sessionManager.isProfileComplete()) Screen.CompleteProfile.route
         else if (!container.sessionManager.getRtId().isNullOrBlank()) Screen.Main.route
