@@ -31,21 +31,42 @@ class SettingsViewModel(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    private var rtJob: kotlinx.coroutines.Job? = null
+    private var observedRtId: String? = null
+
     init {
         viewModelScope.launch {
             getCurrentUserUseCase().collect { user ->
                 _uiState.update { it.copy(currentUser = user) }
-                if (user?.rtId != null) {
-                    observeRtGroup(user.rtId)
+                val rtId = user?.rtId
+                if (rtId != observedRtId) {
+                    observedRtId = rtId
+                    rtJob?.cancel()
+                    if (rtId == null) {
+                        _uiState.update { it.copy(rtGroup = null) }
+                    } else {
+                        observeRtGroup(rtId)
+                        refreshRtGroup(rtId)
+                    }
                 }
             }
         }
     }
 
     private fun observeRtGroup(rtId: String) {
-        viewModelScope.launch {
+        rtJob = viewModelScope.launch {
             rtRepository.getRtGroupFlow(rtId).collect { group ->
                 _uiState.update { it.copy(rtGroup = group) }
+            }
+        }
+    }
+
+    /** Ambil data RT (termasuk nama pengenal) dari server; cache lokal hanya terisi saat RT dibuat. */
+    private fun refreshRtGroup(rtId: String) {
+        viewModelScope.launch {
+            val res = rtRepository.fetchRtGroup(rtId)
+            if (res is Resource.Error) {
+                _uiState.update { it.copy(error = res.error) }
             }
         }
     }
