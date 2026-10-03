@@ -43,6 +43,28 @@ object DateTimeUtils {
         }
     }
 
+    private fun parseUtc(isoString: String?): Date? {
+        if (isoString.isNullOrBlank()) return null
+        return try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).apply {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+            parser.parse(isoString.substringBefore(".").substringBefore("+").substringBefore("Z"))
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /** true bila waktu itu masih di masa depan (dipakai untuk masa berlaku sematan). */
+    fun isFuture(isoString: String?): Boolean = parseUtc(isoString)?.after(Date()) ?: false
+
+    /** true bila waktu itu jatuh pada tanggal hari ini menurut WIB. */
+    fun isTodayWib(isoString: String?): Boolean {
+        val date = parseUtc(isoString) ?: return false
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { timeZone = WIB_TIMEZONE }
+        return fmt.format(date) == fmt.format(Date())
+    }
+
     fun currentIsoTimestamp(): String {
         val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")

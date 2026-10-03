@@ -54,6 +54,7 @@ import com.kuniran.core.common.DateTimeUtils
 import com.kuniran.core.common.asText
 import com.kuniran.core.model.Post
 import com.kuniran.core.model.PostType
+import com.kuniran.core.model.UserRole
 import com.kuniran.core.ui.components.KuniranTopAppBar
 import kotlinx.coroutines.delay
 
@@ -90,11 +91,16 @@ fun HomeScreen(
         }
     }
 
-    // Urutan dari database: yang disematkan dulu, lalu terbaru. Informasi Hari Ini mengambil
-    // pengumuman teratas, jadi pengumuman yang disematkan admin selalu menang.
+    // Informasi Hari Ini: pengumuman yang disematkan admin (selama belum kedaluwarsa), kalau tidak
+    // ada maka pengumuman terbaru yang dibuat HARI INI (WIB). Selain itu kartu kosong; pengumuman
+    // lama tetap bisa dibaca di daftar di bawah.
     val featured = remember(uiState.posts) {
-        uiState.posts.firstOrNull { it.type == PostType.PENGUMUMAN }
+        val announcements = uiState.posts.filter { it.type == PostType.PENGUMUMAN }
+        announcements.firstOrNull {
+            it.isPinned && (it.pinnedUntil == null || DateTimeUtils.isFuture(it.pinnedUntil))
+        } ?: announcements.firstOrNull { DateTimeUtils.isTodayWib(it.createdAt) }
     }
+    val isAdmin = uiState.currentUser?.role == UserRole.ADMIN_RT
     val feed = remember(uiState.posts, featured) {
         uiState.posts.filter { it.id != featured?.id }
     }
@@ -141,7 +147,19 @@ fun HomeScreen(
             item(key = "info_today") {
                 InfoTodayCard(
                     post = featured,
-                    authorName = featured?.let { uiState.authorNames[it.authorId] ?: it.authorName.ifBlank { fallbackAuthor } }
+                    authorName = featured?.let { uiState.authorNames[it.authorId] ?: it.authorName.ifBlank { fallbackAuthor } },
+                    actions = {
+                        if (featured != null) {
+                            PostActionsMenu(
+                                canPin = isAdmin,
+                                canDelete = isAdmin || uiState.currentUser?.id == featured.authorId,
+                                isPinned = featured.isPinned,
+                                onPinClick = { viewModel.pinPost(featured.id) },
+                                onUnpinClick = { viewModel.unpinPost(featured.id) },
+                                onDeleteClick = { viewModel.deletePost(featured.id) }
+                            )
+                        }
+                    }
                 )
             }
 
@@ -194,6 +212,7 @@ fun HomeScreen(
 private fun InfoTodayCard(
     post: Post?,
     authorName: String?,
+    actions: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -223,8 +242,10 @@ private fun InfoTodayCard(
                     text = stringResource(R.string.home_info_today_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
                 )
+                actions()
             }
 
             if (post == null) {

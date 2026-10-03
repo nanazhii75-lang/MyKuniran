@@ -104,7 +104,7 @@ class HomeViewModel(
         if (_uiState.value.isLoading) return
         val content = text.trim().takeSafe(CONTENT_MAX)
         if (content.isEmpty()) return
-        val title = content.lineSequence().first().takeSafe(TITLE_MAX).trim()
+        val title = titleFromContent(content)
         createPost(
             title = title,
             content = content,
@@ -183,14 +183,6 @@ class HomeViewModel(
     }
 
     private companion object {
-        const val TITLE_MAX = 100     // batas database 150
         const val CONTENT_MAX = 5000  // batas database 5000
     }
-}
-
-/** Potong tanpa memenggal pasangan surrogate (emoji) di tengah. */
-private fun String.takeSafe(max: Int): String {
-    if (length <= max) return this
-    val cut = if (this[max - 1].isHighSurrogate()) max - 1 else max
-    return substring(0, cut)
 }

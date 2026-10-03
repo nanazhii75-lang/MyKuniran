@@ -72,6 +72,7 @@
     <string name="post_menu_pin">Sematkan di Atas</string>
     <string name="post_menu_unpin">Lepas Sematan</string>
     <string name="post_menu_delete">Hapus Pos</string>
+    <string name="post_menu_more">Menu pos</string>
     <string name="feed_menu_refresh">Segarkan Data</string>
     <string name="post_delete_confirm_title">Hapus Pengumuman?</string>
     <string name="post_delete_confirm_desc">Pos yang dihapus tidak dapat dipulihkan kembali.</string>

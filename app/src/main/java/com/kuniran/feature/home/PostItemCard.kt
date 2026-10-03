@@ -2,7 +2,6 @@ package com.kuniran.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,22 +14,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -58,7 +49,6 @@ fun PostItemCard(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
     val isAuthor = currentUserId == post.authorId
     val isAdmin = currentUserRole == UserRole.ADMIN_RT
     val canDelete = (isAuthor || isAdmin) && post.type != PostType.FINANCE_REPORT
@@ -151,59 +141,14 @@ fun PostItemCard(
                     }
                 }
 
-                if (canPin || canDelete) {
-                    Box {
-                        IconButton(
-                            onClick = { menuExpanded = true },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            if (canPin) {
-                                if (post.isPinned) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.post_menu_unpin)) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            onUnpinClick()
-                                        }
-                                    )
-                                } else {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.post_menu_pin)) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            onPinClick()
-                                        }
-                                    )
-                                }
-                            }
-                            if (canDelete) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            stringResource(R.string.post_menu_delete),
-                                            color = MaterialTheme.colorScheme.error
-                                        )
-                                    },
-                                    onClick = {
-                                        menuExpanded = false
-                                        onDeleteClick()
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                PostActionsMenu(
+                    canPin = canPin,
+                    canDelete = canDelete,
+                    isPinned = post.isPinned,
+                    onPinClick = onPinClick,
+                    onUnpinClick = onUnpinClick,
+                    onDeleteClick = onDeleteClick
+                )
             }
 
             Spacer(modifier = Modifier.height(10.dp))
