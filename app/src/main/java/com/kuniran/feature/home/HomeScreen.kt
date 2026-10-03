@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddPhotoAlternate
@@ -134,9 +136,10 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
                 .testTag("feed_list"),
-            contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item(key = "composer") {
                 PostComposer(
@@ -145,6 +148,8 @@ fun HomeScreen(
                     asAnnouncement = asAnnouncement,
                     onToggleAnnouncement = { asAnnouncement = !asAnnouncement },
                     isSending = uiState.isLoading,
+                    userName = uiState.currentUser?.fullName.orEmpty(),
+                    userId = uiState.currentUser?.id.orEmpty(),
                     pickedImage = pickedImage,
                     imageLoader = imageLoader,
                     onPickImage = {
@@ -169,7 +174,7 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 24.dp)
+                            .padding(horizontal = 16.dp, vertical = 24.dp)
                     )
                 }
             } else {
@@ -198,6 +203,8 @@ private fun PostComposer(
     asAnnouncement: Boolean,
     onToggleAnnouncement: () -> Unit,
     isSending: Boolean,
+    userName: String,
+    userId: String,
     pickedImage: Uri?,
     imageLoader: ImageLoader,
     onPickImage: () -> Unit,
@@ -207,9 +214,9 @@ private fun PostComposer(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RectangleShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
@@ -224,17 +231,24 @@ private fun PostComposer(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            OutlinedTextField(
-                value = draft,
-                onValueChange = { if (it.length <= POST_MAX_LENGTH) onDraftChange(it) },
-                placeholder = { Text(stringResource(R.string.home_composer_hint)) },
-                minLines = 2,
-                maxLines = 5,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("input_home_post")
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                InitialAvatar(name = userName, seed = userId, size = 40.dp)
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { if (it.length <= POST_MAX_LENGTH) onDraftChange(it) },
+                    placeholder = { Text(stringResource(R.string.home_composer_hint)) },
+                    minLines = 2,
+                    maxLines = 5,
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("input_home_post")
+                )
+            }
 
             if (pickedImage != null) {
                 ComposerImagePreview(

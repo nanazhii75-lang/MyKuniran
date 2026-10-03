@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
@@ -62,85 +63,77 @@ fun PostItemCard(
         modifier = modifier
             .fillMaxWidth()
             .testTag("post_card_${post.id}"),
-        shape = RoundedCornerShape(16.dp),
+        shape = RectangleShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Badges row + Menu
+            // Kepala kartu ala Facebook Lite: avatar, nama + label, waktu relatif, menu
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = authorName,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-                    when (post.type) {
-                        PostType.PENGUMUMAN -> {
-                            KuniranBadge(
-                                text = stringResource(R.string.post_type_pengumuman),
-                                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        PostType.AGENDA -> {
-                            KuniranBadge(
-                                text = stringResource(R.string.post_type_agenda),
-                                backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                        PostType.FINANCE_REPORT -> {
-                            KuniranBadge(
-                                text = stringResource(R.string.nav_finance),
-                                backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.tertiary
-                            )
-                        }
-                        PostType.DISKUSI -> Unit
-                    }
-
-                    if (post.isPinned) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = RoundedCornerShape(6.dp)
+                InitialAvatar(name = authorName, seed = post.authorId, size = 40.dp)
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = authorName,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        when (post.type) {
+                            PostType.PENGUMUMAN -> {
+                                KuniranBadge(
+                                    text = stringResource(R.string.post_type_pengumuman),
+                                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.primary
                                 )
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                        ) {
+                            }
+                            PostType.AGENDA -> {
+                                KuniranBadge(
+                                    text = stringResource(R.string.post_type_agenda),
+                                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                            PostType.FINANCE_REPORT -> {
+                                KuniranBadge(
+                                    text = stringResource(R.string.nav_finance),
+                                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                            PostType.DISKUSI -> Unit
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (post.isPinned) {
                             Icon(
                                 imageVector = Icons.Default.PushPin,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.post_pinned_badge),
                                 tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(12.dp)
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = stringResource(R.string.post_pinned_badge),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.Bold
-                            )
                         }
+                        Text(
+                            text = DateTimeUtils.formatRelative(post.createdAt),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
+                        )
                     }
                 }
 
@@ -308,14 +301,6 @@ fun PostItemCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Footer (Time)
-            Text(
-                text = DateTimeUtils.formatWibDate(post.createdAt),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline
-            )
         }
     }
 }

@@ -55,6 +55,20 @@ object DateTimeUtils {
         }
     }
 
+    /** Waktu ala media sosial: Baru saja, 5 menit lalu, 2 jam lalu, Kemarin, 3 hari lalu, lalu tanggal. */
+    fun formatRelative(isoString: String?): String {
+        val date = parseUtc(isoString) ?: return formatWibDate(isoString)
+        val diffSec = (System.currentTimeMillis() - date.time) / 1000
+        return when {
+            diffSec < 60 -> "Baru saja"
+            diffSec < 3_600 -> "${diffSec / 60} menit lalu"
+            diffSec < 86_400 -> "${diffSec / 3_600} jam lalu"
+            diffSec < 172_800 -> "Kemarin"
+            diffSec < 604_800 -> "${diffSec / 86_400} hari lalu"
+            else -> formatShortDate(isoString)
+        }
+    }
+
     /** true bila waktu itu masih di masa depan (dipakai untuk masa berlaku sematan). */
     fun isFuture(isoString: String?): Boolean = parseUtc(isoString)?.after(Date()) ?: false
 
