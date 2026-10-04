@@ -57,8 +57,6 @@
     <string name="home_tab_finance">Laporan Kas</string>
     <string name="home_empty_feed">Belum ada kabar atau pengumuman di RT ini.</string>
     <string name="home_btn_new_post">Tulis Kabar</string>
-    <string name="home_info_today_title">Informasi Hari Ini</string>
-    <string name="home_info_today_empty">Belum ada pengumuman. Tulis lewat kolom di bawah, lalu pilih Pengumuman.</string>
     <string name="home_composer_hint">Apa kabar di RT hari ini?</string>
     <string name="home_composer_announcement">Pengumuman</string>
     <string name="home_composer_announcement_note">Pengumuman dikirim sebagai notifikasi ke semua warga RT.</string>
