@@ -77,6 +77,7 @@ Struktur database tersimpan pada direktori `/supabase/migrations/`:
 | `0009_realtime_privileges.sql` | Konfigurasi replikasi realtime Supabase. |
 | `0011_consolidate_schema.sql` | **Migrasi Konsolidasi**: Hapus tabel/view redundan, tambah `house_block`, RPC `rt_people()`, RPC `get_finance_summary()`, serta buat tabel `warga_activities` dan `post_rsvps`. |
 | `0015_username_hold.sql` | **Penahanan nama pengenal RT**: nama lama ditahan 90 hari untuk RT lain, jeda ganti 30 hari (ganti pertama bebas), nama terlarang, trigger penjaga `trg_guard_invite_username`, log `private.rt_username_log`. |
+| `0019_likes_comments.sql` | **Suka & Komentar**: tabel `post_likes` dan `post_comments` dengan kunci asing gabungan `(post_id, rt_id)` ke `posts`, RLS per RT, batas laju komentar 60/jam (`RATE_LIMIT_COMMENT`), fungsi `post_stats()` (SECURITY INVOKER), sinyal Realtime per RT. |
 
 ---
 
@@ -158,8 +159,14 @@ Bagian ini hanya mencatat hal yang **terbukti dari keluaran nyata**. Deskripsi f
 - **Migrasi 0015 (nama pengenal RT)** dijalankan dan diuji di SQL Editor (semua dibatalkan otomatis): nama terlarang ditolak; ganti pertama berhasil dengan 1 baris log; ganti kedua ditolak `USERNAME_COOLDOWN`; nama lama untuk orang luar `TAKEN` tetapi untuk RT pemilik `AVAILABLE`; insert nama lama ditolak; ganti huruf besar/kecil saja tanpa jeda; nama kembar beda huruf ditolak (`23505`); non-admin ditolak `NOT_ADMIN`. Hak eksekusi: `authenticated` ya, `anon` tidak.
 - Uji 0015 berjalan sebagai `postgres`, belum lewat PostgREST dari aplikasi; alur ganti nama dari HP belum diuji.
 
+### Terverifikasi (4 Okt 2026)
+- **Foto postingan:** bug `inJustDecodeBounds` (decodeStream selalu null sehingga semua foto ditolak) diperbaiki; validasi magic bytes di `core/common/ImageMagicBytes.kt`; sudah dicoba di HP fisik dan berhasil.
+- **Migrasi 0019 (Suka & Komentar)** dijalankan di SQL Editor dan diverifikasi dari output nyata: RLS aktif di `post_likes` dan `post_comments`; 6 policy (select/insert/delete per tabel); `authenticated` hanya SELECT, INSERT, DELETE (tanpa UPDATE, tanpa `anon`); 2 kunci asing gabungan `(post_id, rt_id)` ke `posts(id, rt_id)`; trigger `trg_comments_rate_limit` dan `trg_rt_signal` terpasang; `post_stats` bukan SECURITY DEFINER, hanya `authenticated` yang boleh menjalankan.
+- Perilaku 0019 (isolasi lintas RT, batas laju, hapus oleh penulis/admin) diuji di PostgreSQL lokal dengan tiruan skema Supabase, belum di Supabase asli; pengiriman sinyal Realtime belum teruji.
+- Kode Kotlin untuk Suka & Komentar belum dibuat; tabelnya belum dipakai aplikasi.
+
 ### Urutan menjalankan migrasi (SQL Editor, satu file satu kali Run)
-`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013` `0014_notification_log` `0015_username_hold`
+`0001` `0002` `0003` `0004` `0005` `0006_views` `0007_rpc` `0008` `0009` `0010_enum_diskusi` `0011` `0012` `0013` `0014_notification_log` `0015_username_hold` `0016_realtime_broadcast` `0017_announcements_all_members` `0018_post_images` `0019_likes_comments`
 > `0010` wajib dijalankan sendiri agar nilai enum `DISKUSI` ter-commit sebelum dipakai `0013`.
 
 ### Perbaikan yang dibuat dari temuan review
